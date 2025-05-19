@@ -7,18 +7,58 @@ android {
     namespace "dev.alejandrorosas.apptemplate"
 
     defaultConfig {
-        applicationId "dev.alejandrorosas.apptemplate"
+        applicationId "com.anmi.camera.uvcplay"
 
-        versionCode 1
-        versionName "1.0"
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {//签名配置
+        release {//发布版签名配置
+            storeFile file("$projectDir/keystore/anmi.keystore")//密钥文件路径
+            storePassword "anmi2021"//密钥文件密码
+            keyAlias "anmi"//key别名
+            keyPassword "anmi2021"//key密码
+
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+        debug {//debug版签名配置
+            storeFile file("$projectDir/keystore/anmi.keystore")
+            storePassword "anmi2021"
+            keyAlias "anmi"
+            keyPassword "anmi2021"
+
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+
+
+
+    applicationVariants.all{variant->
+        variant.outputs.all{
+            outputFileName = "anmi-uvc-demo-"+rootProject.ext.versionCode +".apk"
+        }
+
+    }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug//设置签名信息
+//            buildConfigField 'String' , 'apkTime',  "\"${releaseTime()}\""
+
+        }
         release {
             minifyEnabled false
+            zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release//设置签名信息
+//            buildConfigField 'String' , 'apkTime',  "\"${releaseTime()}\""
         }
     }
 }
@@ -36,6 +76,9 @@ dependencies {
     implementation rootProject.ext.constraintLayout
     implementation rootProject.ext.dagger
     implementation rootProject.ext.hilt
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
 
     kapt rootProject.ext.daggerCompiler
     kapt rootProject.ext.hiltCompiler
@@ -45,4 +88,6 @@ dependencies {
 
     androidTestImplementation rootProject.ext.androidTestJunit
     androidTestImplementation rootProject.ext.androidTestEspresso
+
+    implementation("com.google.code.gson:gson:2.11.0")
 }

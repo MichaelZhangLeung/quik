@@ -1,40 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
+    android:orientation="vertical"
     >
 
-    <com.pedro.rtplibrary.view.OpenGlView
-        android:id="@+id/openglview"
+    <FrameLayout android:id="@+id/preview_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:keepAspectRatio="true"
-        />
+        android:layout_height="0dp"
+        android:layout_weight="3">
+        <com.pedro.rtplibrary.view.OpenGlView
+            android:id="@+id/openglview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:keepAspectRatio="true"
+            />
+    </FrameLayout>
 
-    <ImageButton
-        android:id="@+id/settings_button"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_margin="16dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_settings"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@android:color/white"
-        />
+<!--    <ImageButton-->
+<!--        android:id="@+id/settings_button"-->
+<!--        android:layout_width="24dp"-->
+<!--        android:layout_height="24dp"-->
+<!--        android:layout_margin="16dp"-->
+<!--        android:background="?selectableItemBackgroundBorderless"-->
+<!--        android:src="@drawable/ic_settings"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:tint="@android:color/white"-->
+<!--        />-->
 
-    <Button
-        android:id="@+id/start_stop_stream"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/button_start_stream"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <RelativeLayout android:layout_height="0dp"
+        android:layout_width="match_parent" android:layout_weight="5">
+        <LinearLayout
+            android:id="@+id/ll_btn_ctrl"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/start_stop_stream"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/button_start_stream"
+                />
+
+            <Button
+                android:id="@+id/btn_setting"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="视频设置"
+                />
+
+
+            <Button
+                android:id="@+id/btn_safe_exit"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="安全弹出USB"
+                />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/tv_notify_title"
+            android:layout_below="@id/ll_btn_ctrl"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:paddingStart="8dp"
+            android:gravity="center|start"
+            android:text="@string/label_notify"
+            android:textColor="@android:color/black"
+            android:background="#F1ECEC"
+            />
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_below="@id/tv_notify_title"
+            android:layout_margin="8dp"
+            android:id="@+id/message_list" android:layout_height="wrap_content" android:layout_width="wrap_content"/>
+    </RelativeLayout>
+
+
+</LinearLayout>

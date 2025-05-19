@@ -1,8 +1,9 @@
 <resources>
-    <string name="app_name">UVC Rtmp Stream</string>
+    <string name="app_name">外访UVC</string>
     <string name="button_stop_service">Stop service</string>
     <string name="button_start_service">Start service</string>
-    <string name="button_stop_stream">Stop stream</string>
-    <string name="button_start_stream">Start stream</string>
-    <string name="toast_missing_stream_url">Please configure the Stream URL</string>
+    <string name="button_stop_stream">结束推流</string>
+    <string name="button_start_stream">开始推流</string>
+    <string name="toast_missing_stream_url">请配置推流URL</string>
+    <string name="label_notify">消息通知</string>
 </resources>

@@ -1,23 +1,42 @@
 buildscript {
-    ext.kotlin_version = '1.9.21'
+
+    ext {
+        versionCode = 100
+        versionName = '1.0.0'
+    }
+
+//    ext.kotlin_version = '1.9.21'
+    ext.kotlin_version = '1.8.0'
     ext.dagger_version = '2.52'
 
     repositories {
+        maven { url 'https://jitpack.io' }
         google()
         mavenCentral()
+//        maven { url "https://maven.aliyun.com/nexus/content/repositories/releases" }
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:7.4.2"
+//        classpath "com.android.tools.build:gradle:7.4.2"
+        classpath "com.android.tools.build:gradle:7.1.2"
+//        classpath 'com.android.tools.build:gradle:8.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$dagger_version"
     }
 }
+//        ./gradlew --stop
+//./gradlew clean
+//./gradlew build
+
+//plugins {
+//    id 'org.jetbrains.kotlin.android' version '1.9.21' apply false
+//}
 
 allprojects {
     apply from: "$rootDir/ktlint.gradle"
 
     repositories {
+        maven { url 'https://jitpack.io' }
         google()
         mavenCentral()
 
@@ -25,6 +44,7 @@ allprojects {
             url 'https://jitpack.io'
             content { includeGroup("com.github.pedroSG94.rtmp-rtsp-stream-client-java") }
         }
+//        maven { url "https://maven.aliyun.com/nexus/content/repositories/releases" }
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

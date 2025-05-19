@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class USBMonitor {
 
-	private static final boolean DEBUG = false;	// TODO set false on production
+	private static final boolean DEBUG = true;	// TODO set false on production
 	private static final String TAG = "USBMonitor";
 
 	private static final String ACTION_USB_PERMISSION_BASE = "com.serenegiant.USB_PERMISSION.";
@@ -428,7 +428,7 @@ public final class USBMonitor {
 	 * @return true if fail to request permission
 	 */
 	public synchronized boolean requestPermission(final UsbDevice device) {
-//		if (DEBUG) Log.v(TAG, "requestPermission:device=" + device);
+		if (DEBUG) Log.e(TAG, "requestPermission:device=" + device);
 		boolean result = false;
 		if (isRegistered()) {
 			if (device != null) {
@@ -585,6 +585,7 @@ public final class USBMonitor {
 	 * @param device
 	 */
 	private final void processConnect(final UsbDevice device) {
+		Log.e(TAG, "processConnect");
 		if (destroyed) return;
 		updatePermission(device, true);
 		mAsyncHandler.post(new Runnable() {
