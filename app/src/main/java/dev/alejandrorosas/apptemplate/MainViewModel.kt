@@ -10,6 +10,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.anmi.camera.uvcplay.model.CaseModel
+import com.base.MyLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.alejandrorosas.core.livedata.SingleLiveEvent
 import dev.alejandrorosas.streamlib.StreamService
@@ -23,22 +25,35 @@ class MainViewModel @Inject constructor(
     // 当前选中索引
     private var selectedResolutionIndex: Int = 0
     private var resolution: String ="1280x720"
+    private var visitId: String? = null
+    private var caseModel: CaseModel? = null
 
     private val serviceLiveData = SingleLiveEvent<(StreamService) -> Unit>()
     val serviceLiveEvent: LiveData<(StreamService) -> Unit> get() = serviceLiveData
 
     private var viewState = MutableLiveData(ViewState())
 
-    private var streamCallback: IStreamStateCallback? = null
 
+    // 外访案件状态 使用 SingleLiveEvent 避免状态重复触发（如屏幕旋转后）
+    private val _caseState = SingleLiveEvent<CaseStatus>()
+    val caseState: LiveData<CaseStatus> get() = _caseState
+
+    private var streamCallback: IStreamStateCallback? = null
     fun getViewState(): LiveData<ViewState> = viewState
+
+    fun notifyCaseEventStatus(success: Boolean, errorCode: Int) {
+        MyLog.e("========>>>>>>>notifyCaseEventStatus:$success, $errorCode)")
+        _caseState.value = CaseStatus(success, errorCode)
+    }
 
     fun onStreamControlButtonClick() {
         withService {
             if (it.isStreaming) {
                 it.stopStream(true)
+                MyLog.e("========>>>>>>>stopStream:$streamCallback)")
                 streamCallback?.onStopStream()
-                viewState.postValue(viewState.value!!.copy(streamButtonText = R.string.button_start_stream))
+                MyLog.e("========>>>>>>>stopStream:$it======>>>>)")
+//                viewState.postValue(viewState.value!!.copy(streamButtonText = R.string.button_start_stream))
             } else {
                 val endpoint = sharedPreferences.getString("endpoint", null)
 
@@ -46,9 +61,28 @@ class MainViewModel @Inject constructor(
                     Toast.makeText(AndroidApplication.app, R.string.toast_missing_stream_url, Toast.LENGTH_LONG).show()
                     return@withService
                 }
+
+                if (StreamService.usbDeviceStatus != 1){
+                    Toast.makeText(AndroidApplication.app, R.string.toast_device_disconnect, Toast.LENGTH_LONG).show()
+                    return@withService
+                }
+
+                if (StreamService.streamStatus == 1){
+                    Toast.makeText(AndroidApplication.app, R.string.toast_stream_connect, Toast.LENGTH_LONG).show()
+                    return@withService
+                }
+
+                if (StreamService.streamStatus == 3){
+                    Toast.makeText(AndroidApplication.app, R.string.toast_stream_connect_start, Toast.LENGTH_LONG).show()
+                    return@withService
+                }
+
                 it.startStreamRtp(endpoint)
+
+                MyLog.e("========>>>>>>>onStartStream:$streamCallback)")
                 streamCallback?.onStartStream()
-                viewState.postValue(viewState.value!!.copy(streamButtonText = R.string.button_stop_stream))
+                MyLog.e("========>>>>>>>onStartStream:$it======>>>>)")
+//                viewState.postValue(viewState.value!!.copy(streamButtonText = R.string.button_stop_stream))
             }
         }
     }
@@ -58,8 +92,42 @@ class MainViewModel @Inject constructor(
     }
 
     fun getResolution(): String {
-//        return sharedPreferences.getString("resolution", null)
-        return resolution
+        return sharedPreferences.getString("pref_resolution", "1280x720")!!
+//        return resolution
+    }
+
+    fun getFps(): String {
+        return sharedPreferences.getString("pref_fps", "30")!!
+//        return resolution
+    }
+
+    fun setVisitId(id:String?) {
+//       sharedPreferences.edit()
+//           .putString("visitId", id)
+//           .apply()
+        visitId = id
+        if (id == null) {
+            StreamService.visitId = ""
+        } else {
+            StreamService.visitId = id
+        }
+    }
+
+    fun getVisitId(): String? {
+        return visitId
+//        return sharedPreferences.getString("visitId", "")!!
+    }
+
+    fun setCaseModel(model:CaseModel?) {
+//       sharedPreferences.edit()
+//           .putString("visitId", id)
+//           .apply()
+        caseModel = model
+        if (model == null){
+            StreamService.caseId = ""
+        } else {
+            StreamService.caseId = model.case_id
+        }
     }
     fun onSettingButtonClick(context:Context, callback: IServiceControlInterface) {
         showResolutionDialog(context, callback)
@@ -116,6 +184,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun setStreamCallback(callback: IStreamStateCallback) {
+        MyLog.e("========>>>>>>>setStreamCallback:$callback)")
         streamCallback = callback
     }
 
@@ -126,4 +195,8 @@ class MainViewModel @Inject constructor(
     data class ViewState(
         val streamButtonText: Int = R.string.button_start_stream,
     )
+
+
+
+    data class CaseStatus(val started: Boolean, val code: Int)
 }

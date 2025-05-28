@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 
 android {
     namespace "dev.alejandrorosas.streamlib"
@@ -9,4 +10,7 @@ dependencies {
     api project(":libraries:libuvccamera")
     api "com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.4"
     implementation rootProject.ext.core
+    implementation rootProject.ext.kotlin
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"  // 协程核心库
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"  // Android 支持
 }

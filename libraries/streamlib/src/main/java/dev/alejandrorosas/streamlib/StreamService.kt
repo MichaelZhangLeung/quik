@@ -17,6 +17,10 @@ import com.pedro.rtmp.utils.ConnectCheckerRtmp
 import com.pedro.rtplibrary.view.OpenGlView
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.ArrayList
 import java.util.Arrays
 
@@ -28,6 +32,11 @@ class StreamService : Service() {
 
         var openGlView: OpenGlView? = null
 
+        var usbDeviceStatus: Int = -1
+        var streamStatus: Int = -1
+        var visitId: String = ""
+        var caseId: String? = ""
+
         // 可选分辨率列表
         val resolutions = mutableListOf<CharSequence>(
             "800x600",
@@ -35,6 +44,7 @@ class StreamService : Service() {
             "1920x1080",
         )
     }
+
 
     val isStreaming: Boolean get() = endpoint != null
     var cameraWidth = 1280
@@ -46,9 +56,11 @@ class StreamService : Service() {
     private var usbMonitor: USBMonitor? = null
     private val notificationManager: NotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
 
+
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     override fun onCreate() {
         super.onCreate()
-        Log.e(TAG, "#onCreate")
+         MyLog.e("$TAG #onCreate")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
@@ -66,7 +78,7 @@ class StreamService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e(TAG, "#onStartCommand")
+         MyLog.e("$TAG #onStartCommand")
 
         intent?.getStringExtra("resolution")?.let {
             val (w, h) = it.split("x").map { it -> it.toInt() }
@@ -86,12 +98,15 @@ class StreamService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e(TAG, "#onDestroy")
+        MyLog.e("$TAG#onDestroy")
         stopStream()
         stopPreview()
         usbMonitor?.unregister()
         usbMonitor?.destroy()
         uvcCamera?.destroy()
+        usbDeviceStatus = -1
+        streamStatus = -1
+        MyLog.e("$TAG#onDestroy out")
     }
 
     private fun prepareStreamRtp() {
@@ -106,6 +121,7 @@ class StreamService : Service() {
     }
 
     fun startStreamRtp(endpoint: String): Boolean {
+        MyLog.e("$TAG#startStreamRtp endpoint:$endpoint, rtmpUSB.isStreaming:${rtmpUSB?.isStreaming}")
         if (rtmpUSB?.isStreaming == false) {
             this.endpoint = endpoint
 //            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 30, 4000 * 1024, 0, uvcCamera) && rtmpUSB!!.prepareAudio()) {
@@ -133,6 +149,7 @@ class StreamService : Service() {
 
     fun stopStream(force: Boolean = false) {
         if (force) endpoint = null
+        MyLog.e("$TAG rtmpUSB.isStreaming:${rtmpUSB?.isStreaming}")
         if (rtmpUSB?.isStreaming == true) rtmpUSB!!.stopStream(uvcCamera)
     }
 
@@ -142,8 +159,10 @@ class StreamService : Service() {
             rtmpUSB!!.stopStream(uvcCamera)
 //            usbMonitor?.unregister()
             uvcCamera?.destroy()
+            usbDeviceStatus = -1
+            streamStatus = -1
         } catch (e: Exception) {
-            Log.e(TAG, "stopAnything exception:$e", e)
+             MyLog.e("$TAG stopAnything exception:$e", e)
         }
     }
 
@@ -155,17 +174,31 @@ class StreamService : Service() {
     private val connectCheckerRtmp = object : ConnectCheckerRtmp {
         override fun onConnectionSuccessRtmp() {
             showNotification("Stream started")
-            Log.e(TAG, "RTP connection success")
+            MyLog.e("$TAG RTP connection success")
+
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.StreamingResult(true, 1))
+            }
+            streamStatus = 1
         }
 
         override fun onConnectionFailedRtmp(reason: String) {
             showNotification("Stream connection failed")
-            Log.e(TAG, "RTP service destroy")
+             MyLog.e("$TAG RTP service destroy")
+
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.StreamingResult(false, 0))
+            }
+            streamStatus = 0
         }
 
         override fun onConnectionStartedRtmp(rtmpUrl: String) {
             showNotification("On connection started")
-            Log.e(TAG, "RTP On connection started")
+             MyLog.e("$TAG RTP On connection started")
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.StreamingResult(true, 3))
+            }
+            streamStatus = 3
         }
 
         override fun onNewBitrateRtmp(bitrate: Long) {
@@ -174,6 +207,11 @@ class StreamService : Service() {
 
         override fun onDisconnectRtmp() {
             showNotification("Stream stopped")
+
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.StreamingResult(false, 2))
+            }
+            streamStatus = 2
         }
 
         override fun onAuthErrorRtmp() {
@@ -196,12 +234,17 @@ class StreamService : Service() {
 
     private val onDeviceConnectListener = object : USBMonitor.OnDeviceConnectListener {
         override fun onAttach(device: UsbDevice?) {
-            MyLog.e("$TAG#onAttach")
+            MyLog.e("$TAG#onAttach: $this")
+            usbDeviceStatus = 2
             usbMonitor!!.requestPermission(device)
         }
 
         override fun onConnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?, createNew: Boolean) {
             MyLog.e("$TAG#onConnect endpoint:$endpoint")
+            usbDeviceStatus = 1
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(true))
+            }
             val camera = UVCCamera()
             camera.open(ctrlBlock)
             try {
@@ -231,15 +274,24 @@ class StreamService : Service() {
 
         override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
             MyLog.e("$TAG#onDisconnect")
+            usbDeviceStatus = 0
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(false))
+            }
             stopStream(false)
         }
 
         override fun onCancel(device: UsbDevice?) {
             MyLog.e("$TAG#onCancel")
+            usbDeviceStatus = 3
         }
 
         override fun onDettach(device: UsbDevice?) {
             MyLog.e("$TAG#onDettach")
+            coroutineScope.launch {
+                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(false))
+            }
+            usbDeviceStatus = 4
             stopStream(false)
         }
     }

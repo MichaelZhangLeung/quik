@@ -39,6 +39,9 @@ import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.Toast;
+
+import com.base.MyLog;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
@@ -603,7 +606,11 @@ public final class USBMonitor {
 					createNew = false;
 				}
 				if (mOnDeviceConnectListener != null) {
-					mOnDeviceConnectListener.onConnect(device, ctrlBlock, createNew);
+					try {
+						mOnDeviceConnectListener.onConnect(device, ctrlBlock, createNew);
+					} catch (Throwable e) {
+						MyLog.e(TAG + "device onConnect exception:"+e, e);
+					}
 				}
 			}
 		});

@@ -30,6 +30,9 @@ class NotifyMessageAdapter : ListAdapter<NotifyMessage, NotifyMessageAdapter.Mes
     override fun submitList(list: List<NotifyMessage>?) {
         super.submitList(list?.sortedByDescending { it.timestamp })
     }
+    fun clearList() {
+        super.submitList(null)
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_message, parent, false)

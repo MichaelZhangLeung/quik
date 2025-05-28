@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 视频 设置组 -->
+    <PreferenceCategory
+        android:key="category_video"
+        android:title="视频设置" >
+
+        <ListPreference
+            android:key="pref_resolution"
+            android:title="视频分辨率"
+            android:dialogTitle="请选择分辨率"
+            android:entries="@array/resolution_entries"
+            android:entryValues="@array/resolution_values"
+            android:defaultValue="1280x720"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            android:key="pref_fps"
+            android:title="视频帧率"
+            android:dialogTitle="请选择帧率"
+            android:entries="@array/fps_entries"
+            android:entryValues="@array/fps_values"
+            android:defaultValue="30"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <!-- 推流 设置组 -->
+    <PreferenceCategory
+        android:key="category_stream"
+        android:title="推流设置" >
+
+        <EditTextPreference
+            android:key="endpoint"
+            android:title="推流地址"
+            android:dialogTitle="请输入推流地址"
+            app:useSimpleSummaryProvider="true"
+            android:defaultValue="" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

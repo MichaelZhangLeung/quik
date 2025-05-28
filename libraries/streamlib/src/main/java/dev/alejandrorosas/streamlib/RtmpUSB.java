@@ -3,6 +3,7 @@ package dev.alejandrorosas.streamlib;
 import android.content.Context;
 import android.media.MediaCodec;
 
+import com.base.MyLog;
 import com.pedro.rtmp.rtmp.RtmpClient;
 import com.pedro.rtmp.utils.ConnectCheckerRtmp;
 import com.pedro.rtplibrary.view.LightOpenGlView;
@@ -47,10 +48,12 @@ public class RtmpUSB extends USBBase {
             rtmpClient.setVideoResolution(videoEncoder.getWidth(), videoEncoder.getHeight());
         }
         rtmpClient.connect(url);
+        MyLog.e("RtmpClient.connect======>>>>>>");
     }
 
     @Override
     protected void stopStreamRtp() {
+        MyLog.e("RtmpUSB.stopStreamRtp in");
         rtmpClient.disconnect();
     }
 

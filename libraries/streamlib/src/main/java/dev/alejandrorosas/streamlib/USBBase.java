@@ -116,7 +116,7 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
             stopPreview(uvcCamera);
             onPreview = true;
         }
-        Log.e(TAG, "prepareVideo: " + width + "x" + height + " " + fps + "fps" + " " + bitrate + "bitrate" + " " + iFrameInterval + "iFrameInterval" + " " + rotation + "rotation");
+        MyLog.e(TAG+"prepareVideo: " + width + "x" + height + " " + fps + "fps" + " " + bitrate + "bitrate" + " " + iFrameInterval + "iFrameInterval" + " " + rotation + "rotation");
         return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, iFrameInterval, FormatVideoEncoder.SURFACE);
     }
 
@@ -231,7 +231,7 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
      * @stopStream to release camera properly if you will close activity.
      */
     public void stopPreview(UVCCamera uvcCamera) {
-        MyLog.e(TAG  + "#stopPreview");
+        MyLog.e(TAG  + "#stopPreview streaming:"  +streaming+", onPreview:"  +onPreview+", glInterface:"  +glInterface);
         if (!isStreaming() && onPreview && !(glInterface instanceof OffScreenGlThread)) {
             if (glInterface != null) {
                 glInterface.stop();
