@@ -274,6 +274,7 @@ class StreamService : Service() {
 
         override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
             MyLog.e("$TAG#onDisconnect")
+            uvcCamera?.onDisconnect()
             usbDeviceStatus = 0
             coroutineScope.launch {
                 StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(false))
@@ -288,11 +289,11 @@ class StreamService : Service() {
 
         override fun onDettach(device: UsbDevice?) {
             MyLog.e("$TAG#onDettach")
-            coroutineScope.launch {
-                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(false))
-            }
-            usbDeviceStatus = 4
-            stopStream(false)
+//            coroutineScope.launch {
+//                StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(false))
+//            }
+//            usbDeviceStatus = 4
+//            stopStream(false)
         }
     }
 

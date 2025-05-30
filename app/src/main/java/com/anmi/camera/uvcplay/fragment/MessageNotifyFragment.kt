@@ -315,8 +315,10 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         when (event.success) {
             true -> {
                 //此处回调两次，code=3 开始连接->code=1 推流成功
-                MyLog.e("${TAG}推流成功：${event.errorCode}")
-                Utils.toast("推流成功：${event.errorCode}")
+                MyLog.e("${TAG}推流成功:${event.errorCode}")
+                if (event.errorCode == 1){
+                    Utils.toast("推流成功")
+                }
                 streamSuccess = true
                 tvStreamBadge?.apply {
                     setBackgroundResource(R.mipmap.icon_streaming)

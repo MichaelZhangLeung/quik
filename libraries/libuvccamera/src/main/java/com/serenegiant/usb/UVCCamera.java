@@ -37,6 +37,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
+import com.base.MyLog;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 
 public class UVCCamera {
@@ -196,6 +197,7 @@ public class UVCCamera {
 				mCtrlBlock.getBusNum(),
 				mCtrlBlock.getDevNum(),
 				getUSBFSName(mCtrlBlock));
+			onDisconnect = false;
 		} catch (final Exception e) {
 			Log.w(TAG, e);
 			result = -1;
@@ -413,6 +415,7 @@ public class UVCCamera {
      */
     public synchronized void startPreview() {
     	if (mCtrlBlock != null) {
+			MyLog.e("[nativePreview]#nativeStartPreview in===>>>:" + this, new Throwable("[nativeStartPreview]"));
     		nativeStartPreview(mNativePtr);
     	}
     }
@@ -421,11 +424,22 @@ public class UVCCamera {
      * stop preview
      */
     public synchronized void stopPreview() {
+		MyLog.e("[nativePreview]onDisconnect:"+ onDisconnect, new Throwable("[onDisconnect]"));
+		if (onDisconnect){
+			return;
+		}
     	setFrameCallback(null, 0);
     	if (mCtrlBlock != null) {
+			MyLog.e("[nativePreview]#nativeStopPreview in===>>>"+ this);
     		nativeStopPreview(mNativePtr);
     	}
     }
+
+
+	boolean onDisconnect = true;
+	public void onDisconnect(){
+		onDisconnect = true;
+	}
 
     /**
      * destroy UVCCamera object
