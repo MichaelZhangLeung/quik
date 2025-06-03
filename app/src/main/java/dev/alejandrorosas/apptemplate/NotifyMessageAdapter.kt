@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.anmi.camera.uvcplay.utils.Utils.wrapNotifyStatus
 
 class NotifyMessageAdapter : ListAdapter<NotifyMessage, NotifyMessageAdapter.MessageViewHolder>(MessageDiffCallback()){
 
@@ -16,11 +17,11 @@ class NotifyMessageAdapter : ListAdapter<NotifyMessage, NotifyMessageAdapter.Mes
 
         fun bind(message: NotifyMessage) {
             tvTitle.text = when (message.data.status) {
-                "FACE_RECOGNITION_SUCCESS" -> "人脸识别成功"
-                "FACE_RECOGNITION_FAILURE" -> "人脸识别失败"
-                "ENVIRONMENT_RECOGNITION_OLD" -> "环境老旧"
-                "AUDIO_EMOTION_ANALYSIS_EXCITE" -> "情绪激动"
-                "VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL" -> "异常行为"
+                wrapNotifyStatus("FACE_RECOGNITION_SUCCESS") -> "人脸识别成功"
+                wrapNotifyStatus("FACE_RECOGNITION_FAILURE") -> "人脸识别失败"
+                wrapNotifyStatus("ENVIRONMENT_RECOGNITION_OLD") -> "环境老旧"
+                wrapNotifyStatus("AUDIO_EMOTION_ANALYSIS_EXCITE") -> "情绪激动"
+                wrapNotifyStatus("VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL") -> "异常行为"
                 else                        -> message.data.status
             }
             tvContent.text = message.data.message

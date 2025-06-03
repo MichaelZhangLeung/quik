@@ -41,6 +41,7 @@ import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.ui.PocAlertDialog
 import com.anmi.camera.uvcplay.utils.Utils
 import com.anmi.camera.uvcplay.utils.Utils.setDebounceClickListener
+import com.anmi.camera.uvcplay.utils.Utils.wrapNotifyStatus
 import com.base.MyLog
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -579,7 +580,7 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             return
         }
 
-        var visitId = viewModel.getVisitId()
+        var visitId = viewModel.getVisitId()//1.首次为null，
         if (visitId == null){
             visitId = Utils.generateVisitId()
             viewModel.setVisitId(visitId)
@@ -663,11 +664,11 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
     fun onPlayVoice(notifyMessage: NotifyMessage) {
         val resId = when (notifyMessage.data.status) {
-            "FACE_RECOGNITION_SUCCESS" -> R.raw.face_recognition_success
-            "FACE_RECOGNITION_FAILURE" -> R.raw.face_recognition_failure
-            "ENVIRONMENT_RECOGNITION_OLD" -> R.raw.environment_recognition_old
-            "AUDIO_EMOTION_ANALYSIS_EXCITE" -> R.raw.audio_emotion_analysis_excite
-            "VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL" -> R.raw.video_emotion_behavior_analysis_abnormal
+            wrapNotifyStatus("FACE_RECOGNITION_SUCCESS") -> R.raw.face_recognition_success
+            wrapNotifyStatus("FACE_RECOGNITION_FAILURE") -> R.raw.face_recognition_failure
+            wrapNotifyStatus("ENVIRONMENT_RECOGNITION_OLD") -> R.raw.environment_recognition_old
+            wrapNotifyStatus("AUDIO_EMOTION_ANALYSIS_EXCITE") -> R.raw.audio_emotion_analysis_excite
+            wrapNotifyStatus("VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL") -> R.raw.video_emotion_behavior_analysis_abnormal
             else                        -> 0
         }
 

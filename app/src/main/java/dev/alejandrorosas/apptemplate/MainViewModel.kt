@@ -101,6 +101,16 @@ class MainViewModel @Inject constructor(
 //        return resolution
     }
 
+    /**
+     * id来源：  1.fragment初始化时配置（新生成）
+     *          2.推流成功后，外访已经结束则重新生成
+     *          3.推流结束时开启外访，复用wsUrl路径中的visit_id(来源于1，2中同时配置的url)
+     *          3.结束外访时，清空visit_id
+     *
+     *
+     * web获取StreamService.visitId：开始外访成功后初始化web，web开始获取id。1.此时推流已开启，此时id来源1/2 2.推流未开启时，两种情况：推流从未开始，id来源1；
+     *  推流关闭过，若上次推流中间经历过外访结束，来源3，若上次推流中间未经历过外访结束，来源1.2.3
+     */
     fun setVisitId(id:String?) {
 //       sharedPreferences.edit()
 //           .putString("visitId", id)

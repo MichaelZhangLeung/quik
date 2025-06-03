@@ -18,6 +18,9 @@ import java.util.*
 @SuppressLint("NewApi")
 object Utils {
 
+    fun wrapNotifyStatus(status:String):String{
+        return "VISIT_$status"
+    }
     fun readRTT(endPoint:String): Long{//"rtmp://dyai.duyansoft.com/live/stream5"
         val addr = InetAddress.getByName(endPoint)
         val start = System.currentTimeMillis()
