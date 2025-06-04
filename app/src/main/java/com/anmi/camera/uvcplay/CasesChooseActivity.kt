@@ -1,9 +1,13 @@
 package com.anmi.camera.uvcplay
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -11,8 +15,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anmi.camera.uvcplay.model.CaseModel
+import com.anmi.camera.uvcplay.state.AddCaseState
 import com.anmi.camera.uvcplay.ui.CaseAdapter
+import com.anmi.camera.uvcplay.utils.Utils.setDebounceClickListener
 import com.base.MyLog
+import com.pedro.encoder.Frame
 import dagger.hilt.android.AndroidEntryPoint
 import dev.alejandrorosas.apptemplate.R
 
@@ -22,6 +29,7 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
 
     private val viewModel by viewModels<MainEntryViewModel>()
     private lateinit var caseListRv: RecyclerView
+    private lateinit var loadingFl: FrameLayout
     private var selectedItem: CaseModel? = null
 
     companion object {
@@ -49,20 +57,17 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
         }
 
         // 底部按钮点击
-        findViewById<Button>(R.id.btn_start_visit).setOnClickListener {
+        findViewById<Button>(R.id.btn_start_visit).setDebounceClickListener(1000L) {
             if (selectedItem == null)  {
                 Toast.makeText(this,
                     "请选中案件后开始外访", Toast.LENGTH_SHORT).show()
             } else {
-//                Toast.makeText(this,
-//                    "开始案件外访：${selectedItem?.case_debtor}", Toast.LENGTH_SHORT).show()
-                val resultIntent = Intent().apply {
-                    putExtra("case", selectedItem)
-                }
-                setResult(Activity.RESULT_OK, resultIntent)
-                finish()
+                viewModel.addCase(selectedItem!!)
             }
         }
+        loadingFl  = findViewById(R.id.loading_overlay)
+        val progressBar: ProgressBar= findViewById(R.id.progress_bar)
+
         caseListRv  = findViewById(R.id.rv_cases)
         caseListRv.setHasFixedSize(true)
         caseListRv.adapter = adapter
@@ -70,6 +75,34 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
 
         viewModel.cases.observe(this) { posts ->
             adapter.submitList(posts)
+        }
+
+        // 1. 先观察 ViewModel 中的状态
+        viewModel.addCaseState.observe(this) { state ->
+            when (state) {
+                is AddCaseState.Idle -> {
+                    loadingFl.visibility = View.GONE
+                }
+                is AddCaseState.Loading -> {
+                    loadingFl.visibility = View.VISIBLE
+                }
+                is AddCaseState.Success -> {
+                    loadingFl.visibility = View.GONE
+                    Toast.makeText(this, "开启外访成功", Toast.LENGTH_SHORT).show()
+                    // 可选：state.data 就是后台返回的 data
+                    val resultIntent = Intent().apply {
+                        putExtra("case", selectedItem)
+                    }
+                    setResult(Activity.RESULT_OK, resultIntent)
+                    finish()
+                }
+                is AddCaseState.Error -> {
+                    loadingFl.visibility = View.GONE
+                    Toast.makeText(this,
+                        "开启外访失败，请稍后再试", Toast.LENGTH_SHORT).show()
+                    viewModel.idle()
+                }
+            }
         }
 
         viewModel.loadPosts()
@@ -88,5 +121,10 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
     override fun onDestroy() {
         super.onDestroy()
         MyLog.d(TAG + "onDestroy")
+    }
+
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
+//        super.onBackPressed()
     }
 }

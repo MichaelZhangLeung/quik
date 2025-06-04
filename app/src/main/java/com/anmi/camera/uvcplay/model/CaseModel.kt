@@ -22,6 +22,15 @@ data class CaseModel(
     val visit_address: String,
     val debtor_image: String
 ) : Serializable{
+
+    fun toMap(): Map<String, Any> {
+        return mapOf(
+            "case_id" to case_id,
+            "case_debtor" to case_debtor,
+            "visit_address" to visit_address,
+            "debtor_image" to debtor_image
+        )
+    }
     override fun toString(): String {
         return "CaseModel(case_debtor='$case_debtor', case_id='$case_id', visit_address='$visit_address', debtor_image='$debtor_image')"
     }

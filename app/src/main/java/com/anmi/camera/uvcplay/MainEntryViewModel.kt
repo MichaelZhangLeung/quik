@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anmi.camera.uvcplay.data.CaseDataRepository
 import com.anmi.camera.uvcplay.model.CaseModel
+import com.anmi.camera.uvcplay.state.AddCaseState
 import com.base.MyLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.alejandrorosas.apptemplate.R
@@ -22,9 +23,12 @@ class MainEntryViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences,
     private val repository: CaseDataRepository
 ) : ViewModel() {
-
     private val _cases = MutableLiveData<List<CaseModel>>()
     val cases: LiveData<List<CaseModel>> = _cases
+
+    // 用 MutableLiveData；也可以换成 MutableStateFlow, LiveData 也能 work
+    private val _addCaseState = MutableLiveData<AddCaseState>(AddCaseState.Idle)
+    val addCaseState: LiveData<AddCaseState> = _addCaseState
 
     private val serviceLiveData = SingleLiveEvent<(StreamService) -> Unit>()
     val serviceLiveEvent: LiveData<(StreamService) -> Unit> get() = serviceLiveData
@@ -44,6 +48,24 @@ class MainEntryViewModel @Inject constructor(
                MyLog.e("==========#getCases exception:$e" )
             }
         }
+    }
+    fun addCase(caseModel: CaseModel) {
+        // 先发一个 Loading 状态
+        _addCaseState.value = AddCaseState.Loading
+        viewModelScope.launch {
+            try {
+                val result:Any? = repository.addCase(caseModel)
+                MyLog.e("==========#addCase result:$result")
+                _addCaseState.postValue(AddCaseState.Success(result))
+            } catch (e: Throwable) {
+               MyLog.e("==========#addCase exception:$e")
+                _addCaseState.postValue(AddCaseState.Error(e))
+            } finally {
+            }
+        }
+    }
+    fun idle() {
+        _addCaseState.postValue(AddCaseState.Idle)
     }
 
     fun getViewState(): LiveData<ViewState> =viewState

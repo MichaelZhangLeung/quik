@@ -2,6 +2,8 @@ package com.anmi.camera.uvcplay.data
 
 import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.net.ApiService
+import com.base.MyLog
+import com.base.log.Dlog
 import jakarta.inject.Inject
 
 class CaseDataRepository @Inject constructor(
@@ -29,5 +31,11 @@ class CaseDataRepository @Inject constructor(
 //                debtor_image = "https://wp-regress.anmiai.com/recording/1000289/mm/860142068305993/2025/05/22/wx_6ebf2236-36d3-11f0-9b81-cf220647e930.png"
 //            )
 //        )
+    }
+    suspend fun addCase(case:CaseModel): Any? {
+        MyLog.e("addCase:${case.toMap()}")
+
+//        return apiService.addCase(case.toMap()).toResult()
+        return apiService.addCase(case).toResult()
     }
 }
