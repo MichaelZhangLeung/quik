@@ -415,7 +415,7 @@ public class UVCCamera {
      */
     public synchronized void startPreview() {
     	if (mCtrlBlock != null) {
-			MyLog.e("[nativePreview]#nativeStartPreview in===>>>:" + this, new Throwable("[nativeStartPreview]"));
+			MyLog.e(TAG + "[camera_preview][nativePreview]#nativeStartPreview in===>>>:" + this, new Throwable("[nativeStartPreview]"));
     		nativeStartPreview(mNativePtr);
     	}
     }
@@ -424,7 +424,7 @@ public class UVCCamera {
      * stop preview
      */
     public synchronized void stopPreview() {
-		MyLog.e("[nativePreview]onDisconnect:"+ onDisconnect, new Throwable("[onDisconnect]"));
+		MyLog.e(TAG + "[camera_preview][stopPreview]onDisconnect:"+ onDisconnect, new Throwable("[stopPreview]"));
 		if (onDisconnect){
 			return;
 		}

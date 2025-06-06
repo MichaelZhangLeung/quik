@@ -21,8 +21,10 @@ import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.preference.PreferenceManager
+import com.anmi.camera.uvcplay.MainEntryViewModel
 import com.anmi.camera.uvcplay.fragment.AnalyzeFragment
 import com.anmi.camera.uvcplay.fragment.MessageNotifyFragment
+import com.anmi.camera.uvcplay.fragment.HistoryFragment
 import com.anmi.camera.uvcplay.ui.PocAlertDialog
 import com.base.MyLog
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -34,8 +36,10 @@ import dev.alejandrorosas.apptemplate.MainViewModel.ViewState
 class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder.Callback, ServiceConnection, IServiceControlInterface {
 
     private val viewModel by viewModels<MainViewModel>()
+    private val apiViewModel by viewModels<MainEntryViewModel>()
     private val msgFragment by lazy { MessageNotifyFragment() }
     private val analyzeFragment by lazy { AnalyzeFragment() }
+    private val historyFragment by lazy { HistoryFragment() }
 
     companion object {
         private const val TAG = "[MainActivity]"
@@ -97,11 +101,12 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
     }
     @SuppressLint("CommitTransaction")
     private fun initTabLayout() {
-        // 第一次添加两个 Fragment，并仅显示消息页
         supportFragmentManager.beginTransaction().apply {
             add(R.id.fragment_container, msgFragment, "MSG")
             add(R.id.fragment_container, analyzeFragment, "ANALYZE")
+            add(R.id.fragment_container, historyFragment, "HISTORY")
             hide(analyzeFragment)
+            hide(historyFragment)
             commit()
         }
 
@@ -109,6 +114,9 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
             when (it.itemId) {
                 R.id.nav_message -> switchTo(msgFragment)
                 R.id.nav_case    -> switchTo(analyzeFragment)
+                R.id.nav_history    -> {
+                    switchTo(historyFragment)
+                }
             }
             true
         }
@@ -118,7 +126,7 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
     private fun switchTo(target: Fragment) {
         supportFragmentManager.beginTransaction().apply {
             // 隐藏当前所有，再显示目标
-            listOf(msgFragment, analyzeFragment).forEach { frag ->
+            listOf(msgFragment, analyzeFragment, historyFragment).forEach { frag ->
                 if (frag == target) show(frag) else hide(frag)
             }
             commit()

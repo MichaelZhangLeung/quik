@@ -67,6 +67,8 @@ class PocAlertDialog private constructor() : DialogFragment() {
         return MaterialAlertDialogBuilder(requireContext(), R.style.AppDialogTheme).create().apply {
             setView(createDialogView())
             window?.setBackgroundDrawableResource(R.drawable.dialog_background)
+            setCancelable(false)
+            setCanceledOnTouchOutside(false)
         }
     }
 

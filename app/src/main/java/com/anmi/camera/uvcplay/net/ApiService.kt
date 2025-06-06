@@ -17,4 +17,6 @@ interface ApiService {
 //    suspend fun addCase(@Query("case_id") case_id: String,): BaseBean<Any>
     @POST("v1/visit/case/log/add")
     suspend fun addCase(@Body caseModel: CaseModel): BaseBean<Any>
+    @GET("v1/visit/end/time/update")
+    suspend fun endVisit(@Query("visit_id") visitId: String): BaseBean<Any>
 }

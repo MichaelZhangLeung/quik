@@ -17,6 +17,7 @@ import java.io.Serializable
 ]
  */
 data class CaseModel(
+    var visit_id: String,
     val case_debtor: String,
     val case_id: String,
     val visit_address: String,

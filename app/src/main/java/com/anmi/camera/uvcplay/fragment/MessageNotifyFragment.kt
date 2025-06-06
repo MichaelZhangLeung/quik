@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anmi.camera.uvcplay.CasesChooseActivity
+import com.anmi.camera.uvcplay.MainEntryViewModel
 import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.ui.PocAlertDialog
 import com.anmi.camera.uvcplay.utils.Utils
@@ -80,6 +81,7 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     }
 
     private val viewModel: MainViewModel by activityViewModels()
+    private val apiViewModel: MainEntryViewModel by activityViewModels()
 
     private var mLayoutInflaterView: View? = null
     private var openGlView: OpenGlView? = null
@@ -91,8 +93,9 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     private var messageEmptyRl: RelativeLayout? = null
     private var caseRunningLayout: LinearLayout? = null
     private var adapter :NotifyMessageAdapter? = null
-//    private var wsUrl: String  = "wss://test-ai.duyansoft.com/algorithm/visit-api/v1/visit/ws/%s"
     private var wsUrl: String  = "wss://myvap.duyansoft.com/algorithm/visit-api/v1/visit/ws/%s"
+    //    private var wsUrl: String  = "wss://test-ai.duyansoft.com/algorithm/visit-api/v1/visit/ws/%s"
+//    private var wsUrlTemplate: String  = "$wsUrl/%s"
     private var wsManager: WsManager? = null
     private var voicePlayer : VoicePlayer? = null
     private var mService: StreamService? = null
@@ -115,8 +118,11 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             val data: Intent? = result.data
             // 在这里处理返回值
             val value = data?.getSerializableExtra("case", CaseModel::class.java)
-//            Toast.makeText(requireContext(), "Got: $value", Toast.LENGTH_SHORT).show()
-            MyLog.e("case select back:$value")
+            val visitId = data?.getStringExtra("visit_id")
+            MyLog.e("case select back:$value, ret_visitId:$visitId, viewModel.getVisitId():${viewModel.getVisitId()}")
+            if (!TextUtils.equals(visitId, viewModel.getVisitId())){
+                viewModel.setVisitId(visitId)
+            }
             value?.let {
                 chooseCaseData = it
                 viewModel.setCaseModel(chooseCaseData)
@@ -192,7 +198,11 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                 override fun onStartStream() {
                     MyLog.e("${TAG}推流已开始，打开 WebSocket 连接")
 
-                    if (viewModel.getVisitId() == null){// 结束外访时已置空，重新生成外访id
+//                    if (viewModel.getVisitId() == null){// 结束外访时已置空，重新生成外访id
+//                        initWebSocket()
+//                    }
+
+                    if (!checkVisitIdForWsUrl()){// 检查url中与缓存的visitid是否一致
                         initWebSocket()
                     }
 
@@ -443,7 +453,11 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                 return@setOnClickListener
             }
 
-            val intent = Intent(requireContext(), CasesChooseActivity::class.java)
+            val intent = Intent(requireContext(), CasesChooseActivity::class.java).apply {
+                putExtra("visit_id", viewModel.getVisitId())
+                putExtra("ws_url", wsUrl)
+                putExtra("stream_success", streamSuccess)
+            }
             openForResult.launch(intent)
         }
     }
@@ -500,6 +514,7 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         if(viewModel.getVisitId() == null){
             //推流已开启，解析推流时连接的ws url中visitId，继续使用
             val wsVisitId = wsUrl.substringAfterLast('/')
+            MyLog.e("onCaseChoose set visitId from ws url：$wsVisitId")
             wsVisitId.let {
                 viewModel.setVisitId(it)
             }
@@ -526,22 +541,28 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                     "是否确定结束外访？",
                     true,
                     onConfirm = {
-                        switchCaseRunningLayout(false)
-                        adapter?.clearList()
-                        switchMessageListLayout(false)
+                        try {
+                            switchCaseRunningLayout(false)
+                            adapter?.clearList()
+                            switchMessageListLayout(false)
 
-                        if (StreamService.streamStatus == 1)
-                            viewModel.onStreamControlButtonClick()
+                            if (StreamService.streamStatus == 1)
+                                viewModel.onStreamControlButtonClick()
+
+                            apiViewModel.endVisit(chooseCaseData, viewModel.getVisitId()!!)
 //                viewModel.onSafeEjectButtonClick()
 //                wsManager?.stopConnect()
 //                        voicePlayer?.release()
-                        chooseCaseData = null
+                            chooseCaseData = null
 
-                        //通知加载web url
-                        viewModel.notifyCaseEventStatus(false, 0)
+                            //通知加载web url
+                            viewModel.notifyCaseEventStatus(false, 0)
 
-                        viewModel.setVisitId(null)
-                        viewModel.setCaseModel(null)
+                            viewModel.setVisitId(null)
+                            viewModel.setCaseModel(null)
+                        } catch (e: Throwable) {
+                            MyLog.e("$TAG endVisit confirm exception:$e", e)
+                        }
                     },
                     onCancel = {
                     },
@@ -581,13 +602,14 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         }
 
         var visitId = viewModel.getVisitId()//1.首次为null，
-        if (visitId == null){
+        if (TextUtils.isEmpty(visitId)){
             visitId = Utils.generateVisitId()
             viewModel.setVisitId(visitId)
             MyLog.e("[initWebSocket]generateVisitId：$visitId")
         }
-
-        wsUrl = String.format(wsUrl, visitId)
+        val prefix = wsUrl.substringBeforeLast('/')  // "wss://myvap.duyansoft.com/algorithm/visit-api/v1/visit/ws"
+        wsUrl = "$prefix/$visitId"
+//        wsUrl = String.format(wsUrl, visitId)
         MyLog.e("[initWebSocket]wsUrl：$wsUrl")
         if (wsManager != null) {
             wsManager!!.stopConnect();
@@ -792,6 +814,13 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 //        mService?.stopPreview()
         stopService()
 //        var openGlView: OpenGlView? = findViewById(R.id.openglview)
+    }
+
+    private fun checkVisitIdForWsUrl():Boolean{
+        val wsVisitId = wsUrl.substringAfterLast('/')
+        val visitId = viewModel.getVisitId()
+        MyLog.e("${TAG}#checkVisitIdForWsUrl equals:${wsVisitId}, ${visitId}")
+        return TextUtils.equals(wsVisitId, visitId)
     }
 
     override fun start(context: Context?, endpoint: String) {

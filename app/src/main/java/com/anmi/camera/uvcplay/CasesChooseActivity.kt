@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.state.AddCaseState
 import com.anmi.camera.uvcplay.ui.CaseAdapter
+import com.anmi.camera.uvcplay.utils.Utils
 import com.anmi.camera.uvcplay.utils.Utils.setDebounceClickListener
 import com.base.MyLog
 import com.pedro.encoder.Frame
@@ -31,6 +33,9 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
     private lateinit var caseListRv: RecyclerView
     private lateinit var loadingFl: FrameLayout
     private var selectedItem: CaseModel? = null
+    private var wsUrl: String? = null
+    private var visitId: String? = null
+    private var streamSuccess: Boolean? = false
 
     companion object {
         private const val TAG = "[CasesChooseActivity]"
@@ -62,7 +67,9 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
                 Toast.makeText(this,
                     "请选中案件后开始外访", Toast.LENGTH_SHORT).show()
             } else {
-                viewModel.addCase(selectedItem!!)
+                visitId = getVisitId()
+                MyLog.d(TAG + "开始外访, visitId:$visitId")
+                visitId?.let { it1 -> viewModel.addCase(selectedItem!!, it1) }
             }
         }
         loadingFl  = findViewById(R.id.loading_overlay)
@@ -92,6 +99,7 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
                     // 可选：state.data 就是后台返回的 data
                     val resultIntent = Intent().apply {
                         putExtra("case", selectedItem)
+                        putExtra("visit_id", visitId)
                     }
                     setResult(Activity.RESULT_OK, resultIntent)
                     finish()
@@ -106,6 +114,10 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
         }
 
         viewModel.loadPosts()
+
+        visitId = intent.extras?.getString("visit_id")
+        wsUrl =intent.extras?.getString("ws_url")
+        streamSuccess =intent.extras?.getBoolean("stream_success")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -126,5 +138,18 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
 //        super.onBackPressed()
+    }
+
+    private fun getVisitId():String? {
+        if (!TextUtils.isEmpty(visitId)){
+            return visitId
+        }
+
+        if (streamSuccess == true){//推流已开始时，使用推流中的visitId
+            return wsUrl?.substringAfterLast('/')
+        }
+
+        //推流未开始时，开始外访生成新visitId
+        return Utils.generateVisitId()
     }
 }

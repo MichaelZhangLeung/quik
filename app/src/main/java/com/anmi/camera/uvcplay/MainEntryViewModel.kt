@@ -49,17 +49,28 @@ class MainEntryViewModel @Inject constructor(
             }
         }
     }
-    fun addCase(caseModel: CaseModel) {
+    fun addCase(caseModel: CaseModel, visitId:String) {
         // 先发一个 Loading 状态
         _addCaseState.value = AddCaseState.Loading
         viewModelScope.launch {
             try {
-                val result:Any? = repository.addCase(caseModel)
+                val result:Any? = repository.addCase(caseModel, visitId)
                 MyLog.e("==========#addCase result:$result")
                 _addCaseState.postValue(AddCaseState.Success(result))
             } catch (e: Throwable) {
                MyLog.e("==========#addCase exception:$e")
                 _addCaseState.postValue(AddCaseState.Error(e))
+            } finally {
+            }
+        }
+    }
+    fun endVisit(caseModel: CaseModel?, visitId:String) {
+        viewModelScope.launch {
+            try {
+                val result:Any? = repository.endVisit(caseModel, visitId)
+                MyLog.e("==========#endVisit result:$result")
+            } catch (e: Throwable) {
+               MyLog.e("==========#endVisit exception:$e")
             } finally {
             }
         }

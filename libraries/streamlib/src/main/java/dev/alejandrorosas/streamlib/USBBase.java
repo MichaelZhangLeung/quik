@@ -561,7 +561,11 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
      * Replace glInterface used on fly. Ignored if you use SurfaceView or TextureView
      */
     private void replaceGlInterface(GlInterface glInterface, UVCCamera uvcCamera) {
+        MyLog.e(TAG + "#replaceGlInterface, replaceGlInterface:" + glInterface + ", last glInterface:" + this.glInterface);
         if (this.glInterface != null) {
+            if (this.glInterface == glInterface){
+                return;
+            }
             if (isStreaming() || isRecording() || isOnPreview()) {
                 uvcCamera.stopPreview();
                 this.glInterface.removeMediaCodecSurface();

@@ -48,12 +48,15 @@ class MainViewModel @Inject constructor(
 
     fun onStreamControlButtonClick() {
         withService {
+            MyLog.e("========>>>>>>>onStreamControlButtonClick streamStatus:${StreamService.streamStatus}, isStreaming:${it.isStreaming}")
             if (it.isStreaming) {
+//            if (StreamService.streamStatus == 1) {
                 it.stopStream(true)
                 MyLog.e("========>>>>>>>stopStream:$streamCallback)")
                 streamCallback?.onStopStream()
                 MyLog.e("========>>>>>>>stopStream:$it======>>>>)")
 //                viewState.postValue(viewState.value!!.copy(streamButtonText = R.string.button_start_stream))
+//            } else if (StreamService.streamStatus != 3){
             } else {
                 val endpoint = sharedPreferences.getString("endpoint", null)
 
@@ -115,6 +118,7 @@ class MainViewModel @Inject constructor(
 //       sharedPreferences.edit()
 //           .putString("visitId", id)
 //           .apply()
+        MyLog.e("========>>>>>>>setVisitId:$id)", Throwable())
         visitId = id
         if (id == null) {
             StreamService.visitId = ""

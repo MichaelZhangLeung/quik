@@ -32,10 +32,12 @@ class CaseDataRepository @Inject constructor(
 //            )
 //        )
     }
-    suspend fun addCase(case:CaseModel): Any? {
-        MyLog.e("addCase:${case.toMap()}")
-
+    suspend fun addCase(case:CaseModel, visitId:String): Any? {
 //        return apiService.addCase(case.toMap()).toResult()
+        case.visit_id = visitId
         return apiService.addCase(case).toResult()
+    }
+    suspend fun endVisit(case:CaseModel?, visitId:String): Any? {
+        return apiService.endVisit(visitId).toResult()
     }
 }
