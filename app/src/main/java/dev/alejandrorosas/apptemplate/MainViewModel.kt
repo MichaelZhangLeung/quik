@@ -33,6 +33,9 @@ class MainViewModel @Inject constructor(
 
     private var viewState = MutableLiveData(ViewState())
 
+    val command = MutableLiveData<Int>()
+    fun sendCommand(value: Int) { command.value = value }
+
 
     // 外访案件状态 使用 SingleLiveEvent 避免状态重复触发（如屏幕旋转后）
     private val _caseState = SingleLiveEvent<CaseStatus>()

@@ -18,6 +18,7 @@ public class RtmpUSB extends USBBase {
     public RtmpUSB(OpenGlView openGlView, ConnectCheckerRtmp connectChecker) {
         super(openGlView);
         rtmpClient = new RtmpClient(connectChecker);
+        serialMicPusher = new SerialMicPusher(this);
     }
 
     public RtmpUSB(LightOpenGlView lightOpenGlView, ConnectCheckerRtmp connectChecker) {
@@ -35,9 +36,19 @@ public class RtmpUSB extends USBBase {
         rtmpClient.setAuthorization(user, password);
     }
 
+
+    public boolean prepareAudioFromUSB(boolean isStereo, int sampleRate) {
+        prepareAudioRtp(isStereo, sampleRate);
+        return true ;
+    }
+
     @Override
     protected void prepareAudioRtp(boolean isStereo, int sampleRate) {
         rtmpClient.setAudioInfo(sampleRate, isStereo);
+    }
+
+    protected void sendAudio(ByteBuffer aacBuffer , MediaCodec.BufferInfo info) {
+        rtmpClient.sendAudio(aacBuffer, info);
     }
 
     @Override

@@ -47,7 +47,7 @@ class PocAlertDialog private constructor() : DialogFragment() {
             val params = window.attributes
 
             val widthDp = 307
-            val heightDp = 176
+            val heightDp = 190
 
             val metrics = resources.displayMetrics
             val widthPx = (widthDp * metrics.density).toInt()

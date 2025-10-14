@@ -4,13 +4,13 @@
     <item
         android:id="@+id/nav_message"
         android:icon="@drawable/selector_nav_bottom_msg"
-        android:title="消息通知" />
+        android:title="@string/nav_title_message_notify" />
     <item
         android:id="@+id/nav_case"
         android:icon="@drawable/selector_nav_bottom_visit"
-        android:title="外访分析" />
+        android:title="@string/nav_title_case_analyze" />
     <item
         android:id="@+id/nav_history"
         android:icon="@drawable/selector_nav_bottom_history"
-        android:title="外访历史" />
+        android:title="@string/nav_title_case_history" />
 </menu>

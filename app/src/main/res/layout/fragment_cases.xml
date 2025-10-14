@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="#8D959F"
-            android:text="暂无外访，请先选择外访案件"
+            android:text="@string/text_no_case_select_first"
             android:layout_below="@id/iv_empty_icon"
             android:layout_centerHorizontal="true"
             />

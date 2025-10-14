@@ -10,7 +10,6 @@ import android.hardware.usb.UsbDevice
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.base.MyLog
 import com.pedro.rtmp.utils.ConnectCheckerRtmp
@@ -21,8 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import java.util.ArrayList
-import java.util.Arrays
 
 class StreamService : Service() {
     companion object {
@@ -125,7 +122,9 @@ class StreamService : Service() {
         if (rtmpUSB?.isStreaming == false) {
             this.endpoint = endpoint
 //            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 30, 4000 * 1024, 0, uvcCamera) && rtmpUSB!!.prepareAudio()) {
-            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 30, 1_000_000, 0, uvcCamera) && rtmpUSB!!.prepareAudio()) {
+            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 60, 1_000_000, 0, uvcCamera)
+//                && rtmpUSB!!.prepareAudioFromUSB(false, 16_000)) {
+                && rtmpUSB!!.prepareAudio()) {
                 rtmpUSB!!.startStream(uvcCamera, endpoint)
                 return true
             }
@@ -149,8 +148,10 @@ class StreamService : Service() {
 
     fun stopStream(force: Boolean = false) {
         if (force) endpoint = null
-        MyLog.e("$TAG rtmpUSB.isStreaming:${rtmpUSB?.isStreaming}")
-        if (rtmpUSB?.isStreaming == true) rtmpUSB!!.stopStream(uvcCamera)
+        if (rtmpUSB?.isStreaming == true) {
+            MyLog.e("$TAG rtmp isStreaming, stopping")
+            rtmpUSB!!.stopStream(uvcCamera)
+        }
     }
 
     fun stopAnything() {
@@ -167,8 +168,10 @@ class StreamService : Service() {
     }
 
     fun stopPreview() {
-        MyLog.e("$TAG#stopPreview isOnPreview：${rtmpUSB?.isOnPreview}")
-        if (rtmpUSB?.isOnPreview == true) rtmpUSB!!.stopPreview(uvcCamera)
+        if (rtmpUSB?.isOnPreview == true) {
+            MyLog.e("$TAG isOnPreview, stopping preview")
+            rtmpUSB!!.stopPreview(uvcCamera)
+        }
     }
 
     private val connectCheckerRtmp = object : ConnectCheckerRtmp {
@@ -227,7 +230,7 @@ class StreamService : Service() {
         val notification =
             NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(android.R.mipmap.sym_def_app_icon)
-                .setContentTitle("RTP Stream")
+                .setContentTitle("RTP Stream")//todo non-local
                 .setContentText(text).build()
         notificationManager.notify(notifyId, notification)
     }
@@ -241,6 +244,12 @@ class StreamService : Service() {
 
         override fun onConnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?, createNew: Boolean) {
             MyLog.e("$TAG#onConnect endpoint:$endpoint")
+
+            if (UsbUtils.isUsbMicrophone(device)) {
+                MyLog.e("$TAG#mic device bye, only camera allow on here...")
+                return
+            }
+
             usbDeviceStatus = 1
             coroutineScope.launch {
                 StreamEventBus.emitEvent(StreamEventBus.StreamEvent.ConnectionChanged(true))
@@ -248,13 +257,16 @@ class StreamService : Service() {
             val camera = UVCCamera()
             camera.open(ctrlBlock)
             try {
+                MyLog.e("$TAG#onConnect setPreviewSize cameraWidth:$cameraWidth, cameraHeight:$cameraHeight")
  //               val maxSupportedSize = camera.supportedSizeList.maxBy { it.width * it.height }
                 camera.setPreviewSize(cameraWidth, cameraHeight, UVCCamera.FRAME_FORMAT_MJPEG)
             } catch (e: IllegalArgumentException) {
+                MyLog.e("$TAG#onConnect setPreviewSize exception:$e", e)
                 camera.destroy()
                 try {
                     camera.setPreviewSize(cameraWidth, cameraHeight, UVCCamera.DEFAULT_PREVIEW_MODE)
                 } catch (e1: IllegalArgumentException) {
+                    MyLog.e("$TAG#onConnect setPreviewSize DEFAULT exception:$e", e)
                     return
                 }
             }

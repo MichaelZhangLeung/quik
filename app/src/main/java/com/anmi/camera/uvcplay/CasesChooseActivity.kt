@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.state.AddCaseState
+import com.anmi.camera.uvcplay.ui.BaseActivity
 import com.anmi.camera.uvcplay.ui.CaseAdapter
 import com.anmi.camera.uvcplay.utils.Utils
 import com.anmi.camera.uvcplay.utils.Utils.setDebounceClickListener
@@ -27,7 +28,7 @@ import dev.alejandrorosas.apptemplate.R
 
 
 @AndroidEntryPoint
-class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
+class CasesChooseActivity : BaseActivity(R.layout.activity_cases_choose){
 
     private val viewModel by viewModels<MainEntryViewModel>()
     private lateinit var caseListRv: RecyclerView
@@ -57,15 +58,15 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
         val adapter = CaseAdapter(emptyList()) { item ->
             selectedItem = item
             // 选中回调：可以更新界面或存储选中状态
-            Toast.makeText(this,
-                "选中：${item.case_debtor}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this,
+//                "选中：${item.case_debtor}", Toast.LENGTH_SHORT).show()
         }
 
         // 底部按钮点击
         findViewById<Button>(R.id.btn_start_visit).setDebounceClickListener(1000L) {
             if (selectedItem == null)  {
                 Toast.makeText(this,
-                    "请选中案件后开始外访", Toast.LENGTH_SHORT).show()
+                    R.string.toast_select_case_first, Toast.LENGTH_SHORT).show()
             } else {
                 visitId = getVisitId()
                 MyLog.d(TAG + "开始外访, visitId:$visitId")
@@ -95,7 +96,7 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
                 }
                 is AddCaseState.Success -> {
                     loadingFl.visibility = View.GONE
-                    Toast.makeText(this, "开启外访成功", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, R.string.toast_enable_case_ok, Toast.LENGTH_SHORT).show()
                     // 可选：state.data 就是后台返回的 data
                     val resultIntent = Intent().apply {
                         putExtra("case", selectedItem)
@@ -107,7 +108,7 @@ class CasesChooseActivity : AppCompatActivity(R.layout.activity_cases_choose){
                 is AddCaseState.Error -> {
                     loadingFl.visibility = View.GONE
                     Toast.makeText(this,
-                        "开启外访失败，请稍后再试", Toast.LENGTH_SHORT).show()
+                        R.string.toast_enable_case_fail, Toast.LENGTH_SHORT).show()
                     viewModel.idle()
                 }
             }

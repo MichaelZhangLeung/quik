@@ -52,6 +52,12 @@ allprojects {
             jvmTarget = "11"
         }
     }
+
+        configurations.all {
+            // 强制使用 1.0.0
+            resolutionStrategy.force "androidx.dynamicanimation:dynamicanimation:1.0.0"
+
+        }
 }
 
 subprojects {

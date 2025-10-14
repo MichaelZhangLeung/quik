@@ -4,8 +4,9 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import com.anmi.camera.uvcplay.ui.BaseActivity
 
-class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
+class SettingsActivity : BaseActivity(R.layout.activity_settings) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportFragmentManager

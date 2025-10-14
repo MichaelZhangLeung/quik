@@ -38,6 +38,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.base.MyLog;
+import com.base.log.Dlog;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 
 public class UVCCamera {
@@ -50,6 +51,7 @@ public class UVCCamera {
 	public static final int DEFAULT_PREVIEW_MODE = 0;
 	public static final int DEFAULT_PREVIEW_MIN_FPS = 1;
 	public static final int DEFAULT_PREVIEW_MAX_FPS = 30;
+	public static final int DEFAULT_PREVIEW_MAX_FPS_60 = 60;
 	public static final float DEFAULT_BANDWIDTH = 1.0f;
 
 	public static final int FRAME_FORMAT_YUYV = 0;
@@ -126,8 +128,8 @@ public class UVCCamera {
 	}
 
 	private UsbControlBlock mCtrlBlock;
-    protected long mControlSupports;			// カメラコントロールでサポートしている機能フラグ
-    protected long mProcSupports;				// プロセッシングユニットでサポートしている機能フラグ
+    protected long mControlSupports;
+    protected long mProcSupports;
     protected int mCurrentFrameFormat = FRAME_FORMAT_MJPEG;
 	protected int mCurrentWidth = DEFAULT_PREVIEW_WIDTH, mCurrentHeight = DEFAULT_PREVIEW_HEIGHT;
 	protected float mCurrentBandwidthFactor = DEFAULT_BANDWIDTH;
@@ -191,15 +193,28 @@ public class UVCCamera {
     	int result;
     	try {
 			mCtrlBlock = ctrlBlock.clone();
+//			String usbfsName = getUSBFSName(mCtrlBlock);
+//			String usbfsName = "/dev/bus/usb/002/003";
+			Dlog.e("mNativePtr:" + mNativePtr
+					+",mCtrlBlock.getVenderId():" +mCtrlBlock.getVenderId()
+					+",mCtrlBlock.getProductId():" +mCtrlBlock.getProductId()
+					+",mCtrlBlock.getFileDescriptor():" +mCtrlBlock.getFileDescriptor()
+					+",mCtrlBlock.getBusNum():" +mCtrlBlock.getBusNum()
+					+",mCtrlBlock.getDevNum():" +mCtrlBlock.getDevNum()
+					+",mCtrlBlock.getDeviceName():" +mCtrlBlock.getDeviceName()
+					+",getUSBFSName():" +getUSBFSName(mCtrlBlock));
+//					+",usbfsName:" +usbfsName);
 			result = nativeConnect(mNativePtr,
-				mCtrlBlock.getVenderId(), mCtrlBlock.getProductId(),
+				mCtrlBlock.getVenderId(),
+				mCtrlBlock.getProductId(),
 				mCtrlBlock.getFileDescriptor(),
 				mCtrlBlock.getBusNum(),
 				mCtrlBlock.getDevNum(),
-				getUSBFSName(mCtrlBlock));
+//					getUSBFSName(mCtrlBlock),
+					mCtrlBlock.getDeviceName());
 			onDisconnect = false;
 		} catch (final Exception e) {
-			Log.w(TAG, e);
+			MyLog.e(TAG + "#open err:"  + e);
 			result = -1;
 		}
 		if (result != 0) {
@@ -239,7 +254,7 @@ public class UVCCamera {
     	stopPreview();
     	if (mNativePtr != 0) {
     		nativeRelease(mNativePtr);
-//    		mNativePtr = 0;	// nativeDestroyを呼ぶのでここでクリアしちゃダメ
+//    		mNativePtr = 0;
     	}
     	if (mCtrlBlock != null) {
 			mCtrlBlock.close();
@@ -298,7 +313,8 @@ public class UVCCamera {
 	 * @param frameFormat either FRAME_FORMAT_YUYV(0) or FRAME_FORMAT_MJPEG(1)
 	 */
 	public void setPreviewSize(final int width, final int height, final int frameFormat) {
-		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, frameFormat, mCurrentBandwidthFactor);
+		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS_60, frameFormat, mCurrentBandwidthFactor);
+//		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, frameFormat, mCurrentBandwidthFactor);
 	}
 	
 	/**
@@ -1022,7 +1038,7 @@ public class UVCCamera {
     	}
     }
 
-	private final String getUSBFSName(final UsbControlBlock ctrlBlock) {
+	private String getUSBFSName(final UsbControlBlock ctrlBlock) {
 		String result = null;
 		final String name = ctrlBlock.getDeviceName();
 		final String[] v = !TextUtils.isEmpty(name) ? name.split("/") : null;
@@ -1033,7 +1049,7 @@ public class UVCCamera {
 			result = sb.toString();
 		}
 		if (TextUtils.isEmpty(result)) {
-			Log.w(TAG, "failed to get USBFS path, try to use default path:" + name);
+			Dlog.e(TAG+" failed to get USBFS path, try to use default path:" + name);
 			result = DEFAULT_USBFS;
 		}
 		return result;

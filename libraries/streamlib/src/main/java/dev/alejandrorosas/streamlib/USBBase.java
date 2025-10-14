@@ -50,6 +50,7 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
     protected VideoEncoder videoEncoder;
     private MicrophoneManager microphoneManager;
     private AudioEncoder audioEncoder;
+    protected SerialMicPusher serialMicPusher ;
     private GlInterface glInterface;
     private boolean streaming = false;
     private boolean videoEnabled = true;
@@ -128,6 +129,8 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
     }
 
     protected abstract void prepareAudioRtp(boolean isStereo, int sampleRate);
+
+    protected abstract void sendAudio(ByteBuffer aacBuffer, MediaCodec.BufferInfo info);
 
     /**
      * Call this method before use @startStream. If not you will do a stream without audio.
@@ -212,8 +215,8 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
      * @param height of preview in px.
      */
     public void startPreview(final UVCCamera uvcCamera, int width, int height) {
-        MyLog.e(TAG + "#onConnect");
         if (!isStreaming() && !onPreview && !(glInterface instanceof OffScreenGlThread)) {
+            MyLog.e(TAG + "#startPreview ===>>>");
             glInterface.setEncoderSize(width, height);
             glInterface.setRotation(0);
             glInterface.start();
@@ -279,6 +282,12 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
         videoEncoder.start();
         audioEncoder.start();
         microphoneManager.start();
+//        try {//替换为串口mic收音、重写编码推流
+//            serialMicPusher.startEncoding();
+//            StreamBridge.getInstance().startWork();
+//        } catch (Throwable e) {
+//            MyLog.e(TAG + "#startEncoders exception:" + e, e) ;
+//        }
 
         uvcCamera.stopPreview();
         glInterface.stop();
@@ -346,6 +355,8 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
             }
             videoEncoder.stop();
             audioEncoder.stop();
+//            serialMicPusher.stopEncoding();
+//            StreamBridge.getInstance().stopWork();
             videoFormat = null;
             audioFormat = null;
         }

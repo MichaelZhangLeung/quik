@@ -1,5 +1,8 @@
+enableFeaturePreview("VERSION_CATALOGS")
 rootProject.name='UVC Rtmp Stream'
 include ':app'
 include ':core'
 include ':libraries:streamlib'
 include ':libraries:libuvccamera'
+include ':usbHelperLib'
+include ':common'

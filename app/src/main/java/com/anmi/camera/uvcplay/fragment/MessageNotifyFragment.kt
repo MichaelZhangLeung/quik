@@ -38,12 +38,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anmi.camera.uvcplay.CasesChooseActivity
 import com.anmi.camera.uvcplay.MainEntryViewModel
+import com.anmi.camera.uvcplay.locale.LocaleHelper
 import com.anmi.camera.uvcplay.model.CaseModel
+import com.anmi.camera.uvcplay.tts.TtsStreamClient
 import com.anmi.camera.uvcplay.ui.PocAlertDialog
 import com.anmi.camera.uvcplay.utils.Utils
 import com.anmi.camera.uvcplay.utils.Utils.setDebounceClickListener
 import com.anmi.camera.uvcplay.utils.Utils.wrapNotifyStatus
 import com.base.MyLog
+import com.base.ThreadHelper
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.pedro.rtplibrary.view.OpenGlView
@@ -58,6 +61,8 @@ import dev.alejandrorosas.apptemplate.NotifyMessageAdapter
 import dev.alejandrorosas.apptemplate.R
 import dev.alejandrorosas.apptemplate.SettingsActivity
 import dev.alejandrorosas.apptemplate.VoicePlayer
+import dev.alejandrorosas.streamlib.SerialEarPlayer
+import dev.alejandrorosas.streamlib.StreamBridge
 import dev.alejandrorosas.streamlib.StreamEventBus
 import dev.alejandrorosas.streamlib.StreamService
 import kotlinx.coroutines.Job
@@ -93,6 +98,7 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     private var messageEmptyRl: RelativeLayout? = null
     private var caseRunningLayout: LinearLayout? = null
     private var adapter :NotifyMessageAdapter? = null
+//    private var wsUrl: String  = "wss://172.21.66.2:15658/v1/visit/ws/%s"
     private var wsUrl: String  = "wss://myvap.duyansoft.com/algorithm/visit-api/v1/visit/ws/%s"
     //    private var wsUrl: String  = "wss://test-ai.duyansoft.com/algorithm/visit-api/v1/visit/ws/%s"
 //    private var wsUrlTemplate: String  = "$wsUrl/%s"
@@ -108,6 +114,8 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     private var latencyJob: Job? = null
     private val rttScheduler = Executors.newSingleThreadScheduledExecutor()
     private var rttFuture: ScheduledFuture<*>? = null
+
+    private var locale: String? = null
 
 
     @SuppressLint("NewApi")
@@ -137,18 +145,23 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
 
+
         mLayoutInflaterView?.let {
             it.findViewById<TextView>(R.id.tv_resolution).text = viewModel.getResolution()
         }
-//        Toast.makeText(requireContext(), "Settings Back", Toast.LENGTH_SHORT).show()
-//        if (result.resultCode == Activity.RESULT_OK) {
-//            val data: Intent? = result.data
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            val settingResult = data?.getIntExtra("setting_result", 0)
+            if (settingResult == 1000){
+                viewModel.sendCommand(settingResult)
+            }
 //            val value = data?.getIntExtra("changed", 0)
 //            Toast.makeText(requireContext(), "Settings Got: $value", Toast.LENGTH_SHORT).show()
 //            if (value != 0){
 //                onStatusBarChange()
 //            }
-//        }
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -160,6 +173,24 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.tv_stream_info)?.visibility = View.VISIBLE
 
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.fl_stream)?.visibility  = View.VISIBLE
+                val tvStreamBadge = mLayoutInflaterView?.findViewById<TextView>(R.id.tv_stream_badge)
+                tvStreamBadge?.updateLayoutParams<FrameLayout.LayoutParams> {
+                    if (locale == "en"){
+                        width  = context?.dpToPx(40)!!
+                    } else{
+                        width  = context?.dpToPx(22)!!
+                    }
+
+                    height = context?.dpToPx(13)!!
+                }
+                tvStreamBadge?.apply {
+                    if (locale == "en"){
+                        setBackgroundResource(R.mipmap.icon_stream_ready_en)
+                    } else{
+                        setBackgroundResource(R.mipmap.icon_stream_ready)
+                    }
+                }
+
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.fl_inject_device)?.visibility  = View.VISIBLE
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.fl_stream)?.setDebounceClickListener(2000L) {
                     viewModel.onStreamControlButtonClick()
@@ -187,6 +218,10 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        locale = LocaleHelper.getSavedLanguage(requireContext())
+
         initPreview(view)
         initEmptyCaseChoose(view)
         initMessageList(view)
@@ -320,7 +355,12 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         val ivStream = mLayoutInflaterView?.findViewById<ImageView>(R.id.iv_stream)
         val tvStreamBadge = mLayoutInflaterView?.findViewById<TextView>(R.id.tv_stream_badge)
         tvStreamBadge?.updateLayoutParams<FrameLayout.LayoutParams> {
-            width  = context?.dpToPx(if (event.errorCode == 1) 35 else 22)!!
+            width = if (locale == "en"){
+                context?.dpToPx(if (event.errorCode == 1) 49 else 40)!!
+            } else{
+                context?.dpToPx(if (event.errorCode == 1) 35 else 22)!!
+            }
+
             height = context?.dpToPx(13)!!
         }
         when (event.success) {
@@ -328,13 +368,17 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                 //此处回调两次，code=3 开始连接->code=1 推流成功
                 MyLog.e("${TAG}推流成功:${event.errorCode}")
                 if (event.errorCode == 1){
-                    Utils.toast("推流成功")
+                    Utils.toast(getString(R.string.toast_streaming_ok))
                 }
                 streamSuccess = true
                 tvStreamBadge?.apply {
-                    setBackgroundResource(R.mipmap.icon_streaming)
+                    if (locale == "en"){
+                        setBackgroundResource(R.mipmap.icon_streaming_en)
+                    } else{
+                        setBackgroundResource(R.mipmap.icon_streaming)
+                    }
                 }
-                ivStream?.setImageResource(R.mipmap.icon_streaming_main)
+                ivStream?.setImageResource(R.drawable.icon_streaming_main)
 
                 mLayoutInflaterView?.let { it ->
                     it.findViewById<FrameLayout>(R.id.fl_stream_warning).visibility = View.GONE
@@ -348,12 +392,17 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             }
             false -> {
                 MyLog.e("${TAG}推流断开：${event.errorCode}")
-                Utils.toast("推流断开：${event.errorCode}")
+//                Utils.toast("推流断开：${event.errorCode}")
+                Utils.toast(getString(R.string.toast_stream_disconnect))
                 streamSuccess = false
                 tvStreamBadge?.apply {
-                    setBackgroundResource(R.mipmap.icon_stream_ready)
+                    if (locale == "en"){
+                        setBackgroundResource(R.mipmap.icon_stream_ready_en)
+                    } else{
+                        setBackgroundResource(R.mipmap.icon_stream_ready)
+                    }
                 }
-                ivStream?.setImageResource(R.mipmap.icon_streaming_main)
+                ivStream?.setImageResource(R.drawable.icon_stream_ready_main)
 
                 mLayoutInflaterView?.let { it ->
                     it.findViewById<FrameLayout>(R.id.fl_stream_warning).visibility = View.VISIBLE
@@ -383,24 +432,24 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         when (connected) {
             true -> {
                 MyLog.e("${TAG}设备连接成功:" + rlUsbDisConnectWarning)
-                Utils.toast("设备连接成功")
+                Utils.toast(getString(R.string.toast_device_connected))
                 deviceConnected = true
                 openGlView?.visibility = View.VISIBLE
                 rlUsbDisConnectWarning?.visibility = View.GONE
             }
             false -> {
                 MyLog.e("${TAG}设备断开")
-                Utils.toast("设备断开")
+                Utils.toast(getString(R.string.toast_device_disconnect))
                 deviceConnected = false
 //                openGlView?.visibility = View.GONE
                 rlUsbDisConnectWarning?.visibility = View.VISIBLE
 
                 showSystemAlert(
-                    "系统提示",
-                    "未检测到摄像头，请连接摄像头后进行外访作业。",
+                    getString(R.string.text_sys_prompt),
+                    getString(R.string.text_camera_check_failed),
                     false,
                     "",
-                    "确定",
+                    getString(R.string.text_confirm),
                     onConfirm = {
                     },
                     onCancel = {
@@ -412,6 +461,8 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
         onStatusBarChange()
     }
+
+    var ttsStreamClient:TtsStreamClient? = null
 
     private fun initPreview(view: View){
         openGlView = view.findViewById(R.id.openglview)
@@ -433,23 +484,88 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
         view.findViewById<FrameLayout>(R.id.fl_settings).setOnClickListener {
             if (StreamService.streamStatus == 1){
-                Toast.makeText(requireContext(), "请停止推流后进行设置", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.toast_stop_streaming_when_setting, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val intent = Intent(requireContext(), SettingsActivity::class.java)
             openSettingsForResult.launch(intent)
         }
+
+//        view.findViewById<FrameLayout>(R.id.fl_settings).setOnClickListener {
+////            if (StreamService.streamStatus == 1){
+////                Toast.makeText(requireContext(), "请停止推流后进行设置", Toast.LENGTH_SHORT).show()
+////                return@setOnClickListener
+////            }
+////
+////            val intent = Intent(requireContext(), SettingsActivity::class.java)
+////            openSettingsForResult.launch(intent)
+//
+//            StreamBridge.getInstance().startWork()
+//
+////            if (SerialEarPlayer.sSerialEarPlayer != null) {
+////                Utils.toast("测试停止播放")
+////                ttsStreamClient?.disconnect()
+////                SerialEarPlayer.testStopPlay(requireContext())
+////            } else {
+////                Utils.toast("测试播放")
+////                val serialEarPlayer = SerialEarPlayer.testPlay(requireContext())
+////                ttsStreamClient =
+////                    TtsStreamClient("wss://test-ai.duyansoft.com/automind/auto-test-platform/v1/auto/audio/visit/tts", serialEarPlayer, 512)
+////                ttsStreamClient?.setListener(
+////                    object : TtsStreamClient.Listener {
+////                        override fun onOpen() {
+////                            MyLog.e("tts ws open")
+////                        }
+////
+////                        override fun onClose(code: Int, reason: String) {
+////                            MyLog.e("tts ws close")
+////                        }
+////
+////                        override fun onError(t: Throwable) {
+////                            MyLog.e("tts error", t)
+////                        }
+////
+////                        override fun onInfo(info: String) {
+////                            MyLog.e("info: $info")
+////                        }
+////                    },
+////                )
+////                ttsStreamClient?.connect()
+////
+////                ThreadHelper.getInstance().postDelayed(
+////                    {
+////                        ttsStreamClient!!.speak("Hello! 　1.国民大会不以集会之方法行使四权，而以全体国民各在其住居地点行使选举、罢免、创制、复决之四权。他说：“因我国民情散漫，公民智识更未普及，假设各地人民得不以组织国民大会之方式，而在原地行使四权。设使有人利用此点，随时号召各地之选民实行四权，则国家基础即随时摇动，而陷于不安之状态，故此项原则为最不妥善者。")
+////                    },
+////                    2000L,
+////                )
+////            }
+//
+////            if (SerialEarPlayer.sSerialEarPlayer != null){
+////                Utils.toast("测试停止播放")
+////                SerialEarPlayer.testStopPlay(requireContext())
+////            } else {
+////                Utils.toast("测试播放")
+////                val serialEarPlayer = SerialEarPlayer.testPlay(requireContext())
+////            }
+//
+////            Utils.toast("测试耳机写入")
+////            PcmPlayerUtils().sendStream(UsbDeviceManager.getInstance().micPort)
+//        }
     }
 
     private fun initEmptyCaseChoose(view: View) {
         flEmptyCaseChoose = view.findViewById(R.id.fl_case_choose)
-        view.findViewById<Button>(R.id.btn_select_case).setOnClickListener {
+        val selectCaseBtn = view.findViewById<Button>(R.id.btn_select_case)
+//        if (LocaleHelper.getSavedLanguage(requireContext()) == "en"){
+//            selectCaseBtn.setTextSize()
+//        }
+        selectCaseBtn.setOnClickListener {
 
             MyLog.e("select start onClick, streamStatus:${StreamService.streamStatus}, usbDeviceStatus:${StreamService.usbDeviceStatus}")
 
             if (StreamService.usbDeviceStatus != 1){
-                Toast.makeText(requireContext(), "请连接设备后开始外访", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.toast_notify_device_connect_first, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -467,8 +583,8 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
         title: String,
         content: String,
         withCancel:Boolean,
-        cancelText: String = "取消",
-        confirmText: String = "确定",
+        cancelText: String = getString(R.string.text_cancel),
+        confirmText: String = getString(R.string.text_ok),
         onConfirm: () -> Unit = {},
         onCancel: () -> Unit = {},
         tag:String
@@ -485,16 +601,16 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 //            flEmptyCaseChoose?.let {
 //                it.findViewById<TextView>(R.id.tv_empty_message).text = "摄像头未开启推流，开启推流后可进行外访作业。"
 //            }
-// 使用示例（极简调用）
+
             //通知当前案件状态 - 已选择未推流
             viewModel.notifyCaseEventStatus(true, 2)
 
             showSystemAlert(
-                "推流提示",
-                "检测到摄像头未开启推流，请开启推流后进行",
+                getString(R.string.text_stream_prompt),
+                getString(R.string.text_stream_check_failed),
                 true,
-                "稍后开启",
-                "开启推流",
+                getString(R.string.text_stream_enable_delay),
+                getString(R.string.text_stream_enable),
                 onConfirm = {
                     initCaseChoose()
                     viewModel.onStreamControlButtonClick()
@@ -530,15 +646,31 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             val targetName = chooseCaseData?.case_debtor
             val caseId = chooseCaseData?.case_id
             val caseAddress = chooseCaseData?.visit_address
+
+            val tvDebtLabel = it.findViewById<TextView>(R.id.tv_label)
+            tvDebtLabel?.apply {
+                if (locale == "en"){
+                    setBackgroundResource(R.mipmap.icon_debter_en)
+                } else {
+                    setBackgroundResource(R.mipmap.icon_debter)
+                }
+            }
+
             it.findViewById<TextView>(R.id.tv_name).text= targetName
-            it.findViewById<TextView>(R.id.tv_case_no).text= "案件编号：$caseId"
-            it.findViewById<TextView>(R.id.tv_address).text= "外访地址：$caseAddress"
+//            it.findViewById<TextView>(R.id.tv_case_no).text= "${getString(R.string.text_predix_case_number)}：$caseId"
+            it.findViewById<TextView>(R.id.tv_case_no).text= getString(R.string.text_predix_format_case,
+                getString(R.string.text_predix_case_number),
+                caseId)
+//            it.findViewById<TextView>(R.id.tv_address).text= getString(R.string.text_predix_case_address) + "：$caseAddress"
+            it.findViewById<TextView>(R.id.tv_address).text= getString(R.string.text_predix_format_case,
+                getString(R.string.text_predix_case_address),
+                caseAddress)
 
             it.findViewById<TextView>(R.id.btn_end_visit).setOnClickListener {
 
                 showSystemAlert(
-                    "提示",
-                    "是否确定结束外访？",
+                    getString(R.string.text_prompt),
+                    getString(R.string.text_ask_end_case),
                     true,
                     onConfirm = {
                         try {

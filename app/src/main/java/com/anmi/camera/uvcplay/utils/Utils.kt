@@ -1,6 +1,8 @@
 package com.anmi.camera.uvcplay.utils
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.hardware.usb.UsbDevice
 import android.os.SystemClock
 import android.view.View
 import android.widget.Toast
@@ -18,6 +20,15 @@ import java.util.*
 @SuppressLint("NewApi")
 object Utils {
 
+
+
+
+    fun getDeviceName(device: UsbDevice?): String? {
+        return device?.deviceName
+    }
+    fun getContext(): Context {
+        return AndroidApplication.app!!
+    }
     fun wrapNotifyStatus(status:String):String{
         return "VISIT_$status"
     }
