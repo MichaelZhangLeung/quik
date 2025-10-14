@@ -22,12 +22,12 @@
     <RelativeLayout android:id="@+id/preview_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3">
+        android:layout_weight="32">
         <com.pedro.rtplibrary.view.OpenGlView
             android:id="@+id/openglview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:keepAspectRatio="true"
+            app:keepAspectRatio="false"
             />
         <RelativeLayout
             android:paddingHorizontal="68dp"
@@ -55,9 +55,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="未检测到摄像头，请连接USB摄像头后进行外访作业。"
+                android:text="@string/text_camera_check_failed"
                 android:textColor="#A9A9A9"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 />
 
         </RelativeLayout>
@@ -67,7 +67,7 @@
         android:visibility="gone"
         android:id="@+id/fl_stream_warning"
         android:layout_width="match_parent"
-        android:layout_height="32dp"
+        android:layout_height="48dp"
         android:background="#FFF8DF"
         >
         <TextView
@@ -76,7 +76,7 @@
             android:id="@+id/tv_stream_warning"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="提示：摄像头未开启推流，开启推流后可进行外访作业。"
+            android:text="@string/text_prompt_stream_not_start"
             android:textSize="12sp"
             android:textColor="#ED9D34"
             android:gravity="center_vertical"
@@ -97,14 +97,14 @@
             android:text="@string/button_start_stream"
             />
 
-        <Button
-            android:visibility="gone"
-            android:id="@+id/btn_setting"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="视频设置"
-            />
+<!--        <Button-->
+<!--            android:visibility="gone"-->
+<!--            android:id="@+id/btn_setting"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="@string/text_cancel"-->
+<!--            />-->
 
         <Button
             android:visibility="gone"
@@ -112,7 +112,7 @@
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="安全弹出USB"
+            android:text="@string/text_pop_usb"
             />
     </LinearLayout>
 
@@ -123,7 +123,7 @@
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="7"
+        android:layout_weight="68"
         android:background="@color/grayBackground"
         >
         <LinearLayout
@@ -139,7 +139,7 @@
                 android:id="@+id/iv_empty_illustration"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
-                android:src="@mipmap/img_case_empty" />
+                android:src="@drawable/img_message_empty" />
 
             <!-- 提示文字 -->
             <TextView
@@ -147,7 +147,7 @@
                 android:id="@+id/tv_empty_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="暂无选择案件，请选择外访案件后\n开始外访作业！"
+                android:text="@string/text_prompt_case_select_first"
                 android:textSize="14sp"
                 android:textColor="@color/grayText"
                 android:gravity="center"
@@ -158,9 +158,9 @@
                 android:layout_marginTop="48dp"
                 android:id="@+id/btn_select_case"
                 android:layout_width="200dp"
-                android:layout_height="48dp"
-                android:text="选择外访案件"
-                android:textSize="16sp"
+                android:layout_height="40dp"
+                android:text="@string/text_select_case"
+                android:textSize="15sp"
                 android:textColor="@android:color/white"
                 android:background="@drawable/bg_btn_primary"
                  />
@@ -172,7 +172,7 @@
         android:visibility="visible"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_weight="7"
+        android:layout_weight="78"
         android:layout_height="0dp">
 <!--        <androidx.cardview.widget.CardView-->
 <!--            android:layout_height="wrap_content"-->
@@ -352,7 +352,7 @@
                     android:id="@+id/tv_name"
                     android:layout_width="0dp"
                     android:layout_height="32dp"
-                    android:text="郑红仙"
+                    android:text="-"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/black"
@@ -365,7 +365,7 @@
                     android:id="@+id/btn_end_visit"
                     android:layout_width="78dp"
                     android:layout_height="35dp"
-                    android:text="结束外访"
+                    android:text="@string/text_finish_case"
                     android:textSize="12sp"
                     android:textColor="@color/white"
                     android:background="@drawable/bg_button_outline"
@@ -379,7 +379,7 @@
                     android:id="@+id/tv_case_no"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="案件编号：12003094"
+                    android:text="-"
                     android:textSize="12sp"
                     android:textColor="@android:color/darker_gray"
                     android:layout_marginTop="8dp"
@@ -391,7 +391,7 @@
                     android:id="@+id/tv_address"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="外访地址：北京市城南区友爱胡同420号"
+                    android:text="-"
                     android:textSize="12sp"
                     android:textColor="@android:color/darker_gray"
                     android:layout_marginTop="4dp"
@@ -436,20 +436,20 @@
                     android:layout_below="@id/tv_notify_title"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
+
                     <ImageView
                         android:id="@+id/iv_empty_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@mipmap/img_message_empty"
+                        android:layout_width="216dp"
+                        android:layout_height="149dp"
                         android:layout_centerInParent="true"
-                        />
+                        android:src="@drawable/img_message_empty" />
                     <TextView
                         android:layout_marginTop="-8dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
                         android:textColor="#8D959F"
-                        android:text="暂无内容"
+                        android:text="@string/text_content_empty"
                         android:layout_below="@id/iv_empty_icon"
                         android:layout_centerHorizontal="true"
                         />

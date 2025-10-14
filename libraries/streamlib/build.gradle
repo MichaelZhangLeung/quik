@@ -7,6 +7,8 @@ android {
 }
 
 dependencies {
+
+    implementation project(':common')
     api project(":libraries:libuvccamera")
     api "com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.4"
     implementation rootProject.ext.core

@@ -119,7 +119,7 @@ class AnalyzeFragment : Fragment() {
 
                 override fun onJsConfirm(view: WebView?, url: String?, message: String?, result: JsResult): Boolean {
                     AlertDialog.Builder(context)
-                        .setTitle("确认")
+                        .setTitle(getString(R.string.text_confirm))
                         .setMessage(message)
                         .setPositiveButton(android.R.string.ok) { dialog, which -> result.confirm() }
                         .setNegativeButton(android.R.string.cancel) { dialog, which -> result.cancel() }
@@ -177,6 +177,7 @@ class AnalyzeFragment : Fragment() {
 //                        webView?.loadUrl("https://test-ai.duyansoft.com/algorithm/ai-envoy/")
 //                            webView?.loadUrl("https://test-ai.duyansoft.com/algorithm/ai-envoy-h5/")
                             webView?.loadUrl("https://myvap.duyansoft.com/algorithm/ai-envoy-h5/")
+//                            webView?.loadUrl("https://172.21.66.2:15658/algorithm/ai-envoy-h5/")
                         },
                         1000L,
                     )

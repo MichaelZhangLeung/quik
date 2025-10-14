@@ -93,6 +93,8 @@ dependencies {
     implementation project(':core')
     implementation project(':libraries:streamlib')
 
+    implementation project(':common')
+
     implementation rootProject.ext.kotlin
     implementation rootProject.ext.appcompat
     implementation "androidx.preference:preference-ktx:1.2.1"

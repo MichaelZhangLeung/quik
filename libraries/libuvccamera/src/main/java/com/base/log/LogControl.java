@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class LogControl {
     public final static Boolean LOG_TO_FILE = true; // 日志写入文件开关
-    public static final boolean LOG_SWITCH = true;
+    public static final boolean LOG_SWITCH = false;
 
     private static final String TAG = "LogControl";
     private static final boolean DEBUG = false;

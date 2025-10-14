@@ -37,7 +37,10 @@ class CaseAdapter(
         fun bind(item: CaseModel, isSelected: Boolean) {
             // 设置文本
             binding.tvName.text = item.case_debtor
-            binding.tvCaseNo.text = "案件编号：${item.case_id}"
+            val context = binding.tvCaseNo.context
+            binding.tvCaseNo.text = context.getString(R.string.text_predix_format_case,
+                context.getString(R.string.text_predix_case_number),
+                item.case_id)
             binding.tvAddress.text = item.visit_address
 
             // 加载头像或显示占位

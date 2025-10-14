@@ -31,12 +31,12 @@ import android.os.Parcelable;
 public class Size implements Parcelable {
 	//
 	/**
-	 * native側のuvc_raw_format_tの値, こっちは主にlibuvc用
+	 * 本机一侧的uvc_raw_format_t的值，这主要用于libubvc
 	 * 9999 is still image
 	 */
 	public int type;
 	/**
-	 * native側のraw_frame_tの値, androusb用,
+	 * raw_frame_t在本机侧的值，for androusb
 	 * libuvcは対応していない
 	 */
 	public int frame_type;
@@ -46,18 +46,11 @@ public class Size implements Parcelable {
 	public int frameIntervalType;
 	public int frameIntervalIndex;
 	public int[] intervals;
-	// ここ以下はframeIntervalTypeとintervalsから#updateFrameRateで計算する
+	// 在这里，使用Frame IntervalType和间隔的UpdateFramerate计算以下内容。
 	public float[] fps;
 	private String frameRates;
 
-	/**
-	 * コンストラクタ
-	 * @param _type native側のraw_format_tの値, ただし9999は静止画
-	 * @param _frame_type native側のraw_frame_tの値
-	 * @param _index
-	 * @param _width
-	 * @param _height
-	 */
+
 	public Size(final int _type, final int _frame_type, final int _index, final int _width, final int _height) {
 		type = _type;
 		frame_type = _frame_type;
@@ -70,16 +63,7 @@ public class Size implements Parcelable {
 		updateFrameRate();
 	}
 
-	/**
-	 * コンストラクタ
-	 * @param _type native側のraw_format_tの値, ただし9999は静止画
-	 * @param _frame_type native側のraw_frame_tの値
-	 * @param _index
-	 * @param _width
-	 * @param _height
-	 * @param _min_intervals
-	 * @param _max_intervals
-	 */
+
 	public Size(final int _type, final int _frame_type, final int _index, final int _width, final int _height, final int _min_intervals, final int _max_intervals, final int _step) {
 		type = _type;
 		frame_type = _frame_type;
@@ -95,15 +79,7 @@ public class Size implements Parcelable {
 		updateFrameRate();
 	}
 
-	/**
-	 * コンストラクタ
-	 * @param _type native側のraw_format_tの値, ただし9999は静止画
-	 * @param _frame_type native側のraw_frame_tの値
-	 * @param _index
-	 * @param _width
-	 * @param _height
-     * @param _intervals
-     */
+
 	public Size(final int _type, final int _frame_type, final int _index, final int _width, final int _height, final int[] _intervals) {
 		type = _type;
 		frame_type = _frame_type;
@@ -123,10 +99,7 @@ public class Size implements Parcelable {
 		updateFrameRate();
 	}
 
-	/**
-	 * コピーコンストラクタ
-	 * @param other
-	 */
+
 	public Size(final Size other) {
 		type = other.type;
 		frame_type = other.frame_type;
@@ -146,7 +119,6 @@ public class Size implements Parcelable {
 	}
 
 	private Size(final Parcel source) {
-		// 読み取り順はwriteToParcelでの書き込み順と同じでないとダメ
 		type = source.readInt();
 		frame_type = source.readInt();
 		index = source.readInt();
@@ -197,7 +169,6 @@ public class Size implements Parcelable {
 	}
 
 	public void setCurrentFrameRate(final float frameRate) {
-		// 一番近いのを選ぶ
 		int index = -1;
 		final int n = fps != null ? fps.length : 0;
 		for (int i = 0; i < n; i++) {
@@ -259,7 +230,6 @@ public class Size implements Parcelable {
 					}
 				}
 			} catch (final Exception e) {
-				// ignore, なんでかminとmaxが0になってるんちゃうかな
 				fps = null;
 			}
 		}

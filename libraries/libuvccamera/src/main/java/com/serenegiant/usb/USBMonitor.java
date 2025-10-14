@@ -657,10 +657,9 @@ public final class USBMonitor {
 	}
 
 	/**
-	 * USB機器毎の設定保存用にデバイスキー名を生成する。
-	 * ベンダーID, プロダクトID, デバイスクラス, デバイスサブクラス, デバイスプロトコルから生成
-	 * 同種の製品だと同じキー名になるので注意
-	 * @param device nullなら空文字列を返す
+	 * 为每个USB设备存储设置的设备密钥名称。供应商ID，产品ID，设备类，设备子类，
+	 * 从相同类型的产品生成的设备协议。请注意，@param设备的密钥名称如果为null，则将返回一个空字符串。
+	 * @param device If null, it returns an empty string
 	 * @return
 	 */
 	public static final String getDeviceKeyName(final UsbDevice device) {
@@ -678,14 +677,11 @@ public final class USBMonitor {
 		return getDeviceKeyName(device, null, useNewAPI);
 	}
 	/**
-	 * USB機器毎の設定保存用にデバイスキー名を生成する。この機器名をHashMapのキーにする
-	 * UsbDeviceがopenしている時のみ有効
-	 * ベンダーID, プロダクトID, デバイスクラス, デバイスサブクラス, デバイスプロトコルから生成
-	 * serialがnullや空文字でなければserialを含めたデバイスキー名を生成する
-	 * useNewAPI=trueでAPIレベルを満たしていればマニュファクチャ名, バージョン, コンフィギュレーションカウントも使う
-	 * @param device nullなら空文字列を返す
-	 * @param serial	UsbDeviceConnection#getSerialで取得したシリアル番号を渡す, nullでuseNewAPI=trueでAPI>=21なら内部で取得
-	 * @param useNewAPI API>=21またはAPI>=23のみで使用可能なメソッドも使用する(ただし機器によってはnullが返ってくるので有効かどうかは機器による)
+	 *为每个USB设备存储设置的设备密钥名称。使用此设备名称作为Hashmap的关键。仅在USBDEVICE打开时有效。从供应商ID，产品ID，设备类，设备子类，设备协议生成。
+	 * 如果串行不为空或空，则生成设备密钥名称，包括串行。如果Usenewapi = true，请使用API级别，还使用制造商名称，版本和配置计数。 @Param设备如果null，
+	 * 请返回一个空字符串@Param序列上通过USBDeviceConnectionGetSerial获得的序列号，使用null和usenewapi = true and api> = 21 = 21。
+	 * Usenewapi使用仅与API> = 21或API> = 23一起使用的方法（但取决于设备，将返回null，因此是否有效取决于设备）
+	 * @param useNewAPI 使用只能与API> = 21或API> = 23一起使用的方法（尽管将根据设备返回空，但取决于设备）
 	 * @return
 	 */
 	@SuppressLint("NewApi")
@@ -873,7 +869,7 @@ public final class USBMonitor {
 	private static final int USB_DT_DEVICE_SIZE = 18;
 
 	/**
-	 * 指定したIDのStringディスクリプタから文字列を取得する。取得できなければnull
+	 * 使用指定ID从字符串描述符获取字符串。如果无法检索，则无效
 	 * @param connection
 	 * @param id
 	 * @param languageCount
@@ -1070,7 +1066,7 @@ public final class USBMonitor {
 			mWeakDevice = new WeakReference<UsbDevice>(device);
 			mBusNum = src.mBusNum;
 			mDevNum = src.mDevNum;
-			// FIXME USBMonitor.mCtrlBlocksに追加する(今はHashMapなので追加すると置き換わってしまうのでだめ, ListかHashMapにListをぶら下げる?)
+			// FIXME 添加到USBMonitor.mctrlblocks（现在是hashmap，因此，如果添加它会替换它，所以它不好，将列表挂在列表或hashmap上？）
 		}
 
 		/**

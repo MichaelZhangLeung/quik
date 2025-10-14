@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import com.anmi.camera.uvcplay.locale.LocaleHelper
+import com.anmi.camera.uvcplay.utils.AppUncaughtExceptionHandler
 import com.base.MyLog
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
@@ -21,9 +23,22 @@ class AndroidApplication : Application(){
         var app: Context? = null
         const val TAG: String = "[AndroidApplication]"
     }
+
+    override fun attachBaseContext(base: Context) {
+        val savedLanguage = LocaleHelper.getSavedLanguage(base)
+        val wrapped = LocaleHelper.wrapContext(base, savedLanguage)
+        super.attachBaseContext(wrapped)
+    }
+    @SuppressLint("NewApi")
     override fun onCreate() {
         super.onCreate()
         app = this
+
+        AppUncaughtExceptionHandler.getInstance().init();
+
+        val savedLanguage = LocaleHelper.getSavedLanguage(this)
+        MyLog.e("#onCreate savedLanguage:$savedLanguage")
+
 
         QbSdk.setTbsListener(
             object : TbsListener {

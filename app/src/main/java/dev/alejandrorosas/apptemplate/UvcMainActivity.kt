@@ -11,6 +11,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
+import android.util.TypedValue
 import android.view.SurfaceHolder
 import android.widget.Button
 import android.widget.Toast
@@ -18,6 +19,7 @@ import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.preference.PreferenceManager
@@ -25,15 +27,19 @@ import com.anmi.camera.uvcplay.MainEntryViewModel
 import com.anmi.camera.uvcplay.fragment.AnalyzeFragment
 import com.anmi.camera.uvcplay.fragment.MessageNotifyFragment
 import com.anmi.camera.uvcplay.fragment.HistoryFragment
+import com.anmi.camera.uvcplay.ui.BaseActivity
 import com.anmi.camera.uvcplay.ui.PocAlertDialog
+import com.anmi.camera.uvcplay.view.FixedSizeDrawable
 import com.base.MyLog
+import com.base.ThreadHelper
+import com.base.log.Dlog
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.alejandrorosas.apptemplate.MainViewModel.ViewState
 
 
 @AndroidEntryPoint
-class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder.Callback, ServiceConnection, IServiceControlInterface {
+class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Callback, ServiceConnection, IServiceControlInterface {
 
     private val viewModel by viewModels<MainViewModel>()
     private val apiViewModel by viewModels<MainEntryViewModel>()
@@ -50,13 +56,12 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
         initTabLayout()
 
         onBackPressedDispatcher.addCallback(this) {
-
             showSystemAlert(
-                "提示",
-                "是否确定退出外访应用？",
+                getString(R.string.text_prompt),
+                getString(R.string.text_exit_app_ask),
                 true,
-                "取消",
-                "确定",
+                getString(R.string.text_cancel),
+                getString(R.string.text_ok),
                 onConfirm = {
                     clearAllFragments()
                     // 关闭当前 Activity 以及所有父 Activity
@@ -110,7 +115,9 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
             commit()
         }
 
-        findViewById<BottomNavigationView>(R.id.bottom_nav).setOnItemSelectedListener {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_nav)
+
+        bottomNavigationView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.nav_message -> switchTo(msgFragment)
                 R.id.nav_case    -> switchTo(analyzeFragment)
@@ -120,7 +127,49 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
             }
             true
         }
+
+        applyFixedIconsToBottomNav(bottomNavigationView, 25)
+
+        ThreadHelper.getInstance().postToUIThread({
+            val menu = bottomNavigationView.menu
+            for (i in 0 until menu.size()) {
+                val item = menu.getItem(i)
+                val icon = item.icon
+                icon?.let {
+                    Dlog.e("ICON_CHECK " +"item=${item.title} intrinsic=${it.intrinsicWidth}x${it.intrinsicHeight} bounds=${it.bounds}")
+                }
+            }
+        }, 3000L)
     }
+
+    // 在你的 Activity onCreate() 或初始化 bottom nav 后调用
+    private fun applyFixedIconsToBottomNav(bottomNav: BottomNavigationView, iconDp: Int = 24) {
+        val sizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, iconDp.toFloat(), bottomNav.resources.displayMetrics).toInt()
+
+        val menu = bottomNav.menu
+        for (i in 0 until menu.size()) {
+            val item = menu.getItem(i)
+            val original = item.icon ?: continue
+
+            // 包装并固定尺寸（保留状态）
+            val fixed = FixedSizeDrawable(original, sizePx, sizePx)
+            // 明确设定 bounds，防止首次绘制时为 0
+            fixed.setBounds(0, 0, sizePx, sizePx)
+
+            // 把 fixed 设置回去
+            item.icon = fixed
+
+            // 将当前 menu item 的 checked state 传给 drawable（保证第一次显示状态正确）
+            val state = if (item.isChecked) intArrayOf(android.R.attr.state_checked) else intArrayOf(-android.R.attr.state_checked)
+            fixed.state = state
+        }
+
+        // 强制 BottomNavigationView 刷新
+        bottomNav.invalidate()
+        // 若需要可让 BottomNavigationView 重新应用选中项（触发内部 state 更新）
+        bottomNav.selectedItemId = bottomNav.selectedItemId
+    }
+
 
     @SuppressLint("CommitTransaction")
     private fun switchTo(target: Fragment) {
@@ -138,7 +187,7 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
         super.onCreate(savedInstanceState)
 
         requestPermissions(this, arrayOf(RECORD_AUDIO, CAMERA), 1)
-        requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE), 2)
+        requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), 2)
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         if (TextUtils.isEmpty(sharedPreferences.getString("endpoint", null))){
             sharedPreferences.edit().putString("endpoint", "rtmp://117.74.66.189:1935/live/stream5").apply()
@@ -172,7 +221,7 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
             if (grantResults.isNotEmpty()) {
                 grantResults.forEach {
                     if (it != 0) {
-                        Toast.makeText(this, "权限获取失败，无法使用", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, R.string.toast_permission_not_granted, Toast.LENGTH_LONG).show()
                         return
                     }
                 }
@@ -180,7 +229,7 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
                 doOnCreate()
             } else {
                 //权限被拒绝
-                Toast.makeText(this, "权限为空，无法使用", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, R.string.toast_permission_deny, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -277,8 +326,8 @@ class UvcMainActivity : AppCompatActivity(R.layout.activity_main), SurfaceHolder
         title: String,
         content: String,
         withCancel: Boolean,
-        cancelText: String = "取消",
-        confirmText: String = "确定",
+        cancelText: String = getString(R.string.text_cancel),
+        confirmText: String = getString(R.string.text_ok),
         onConfirm: () -> Unit = {},
         onCancel: () -> Unit = {},
         tag: String

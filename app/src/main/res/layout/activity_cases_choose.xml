@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
             app:navigationIcon="@mipmap/ic_back"
-            app:title="选择外访案件"
+            app:title="@string/title_case_select"
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -51,7 +51,7 @@
             android:layout_height="48dp"
             android:layout_gravity="center"
             android:background="@drawable/bg_btn_primary"
-            android:text="开始外访"
+            android:text="@string/button_text_start_case"
             android:textColor="@color/white"
             android:textSize="16sp" />
     </FrameLayout>

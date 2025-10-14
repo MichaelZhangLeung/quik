@@ -40,6 +40,7 @@ class HistoryFragment : Fragment() {
     private var layoutView: View? = null
     private var webView: WebView? = null
 
+//    private val mUrl:String = "https://172.21.66.2:15658/algorithm/ai-envoy-h5/#/history"
     private val mUrl:String = "https://myvap.duyansoft.com/algorithm/ai-envoy-h5/#/history"
 
     // 记录上次 reload 的系统时间（毫秒）
@@ -115,7 +116,7 @@ class HistoryFragment : Fragment() {
             it.webChromeClient = object : WebChromeClient() {
                 override fun onJsAlert(view: WebView?, url: String?, message: String?, result: JsResult): Boolean {
                     AlertDialog.Builder(context)
-                        .setTitle("提示")
+                        .setTitle(getString(R.string.text_prompt))
                         .setMessage(message)
                         .setPositiveButton(android.R.string.ok) { dialog, which -> result.confirm() }
                         .setCancelable(false)
@@ -126,7 +127,7 @@ class HistoryFragment : Fragment() {
 
                 override fun onJsConfirm(view: WebView?, url: String?, message: String?, result: JsResult): Boolean {
                     AlertDialog.Builder(context)
-                        .setTitle("确认")
+                        .setTitle(getString(R.string.text_confirm))
                         .setMessage(message)
                         .setPositiveButton(android.R.string.ok) { dialog, which -> result.confirm() }
                         .setNegativeButton(android.R.string.cancel) { dialog, which -> result.cancel() }

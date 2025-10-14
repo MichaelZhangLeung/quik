@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Field Visiting</string>
+<!--    <string name="button_text_start_case">Start Field Visiting</string>-->
+    <string name="button_text_start_case">Start</string>
+    <string name="button_stop_stream">Stop Streaming</string>
+    <string name="button_start_stream">Start Streaming</string>
+    <string name="toast_missing_stream_url">Please configure the streaming URL</string>
+    <string name="toast_device_disconnect">USB device disconnected</string>
+    <string name="toast_stream_connect">Streaming has already started</string>
+    <string name="toast_stream_connect_start">Streaming connection in progress</string>
+    <string name="toast_stream_disconnect">Streaming has been disconnected</string>
+    <string name="toast_notify_device_connect_first">Please connect the device and start field visiting</string>
+
+    <string name="label_notify">Notification</string>
+    <string name="label_case">Case Information</string>
+
+<!--    <string name="nav_title_message_notify">Message Notification</string>-->
+    <string name="nav_title_message_notify">Message</string>
+    <string name="nav_title_case_analyze">Analysis</string>
+    <string name="nav_title_case_history">History</string>
+
+    <string name="toast_select_case_first">Please select a case to start the field visit</string>
+    <string name="toast_enable_case_ok">Field visit started successfully</string>
+    <string name="toast_enable_case_fail">Failed to start the field visit, Please try again later</string>
+    <string name="toast_device_connected">Device connected successfully</string>
+
+    <string name="toast_streaming_ok">Streaming successful</string>
+
+    <string name="toast_permission_not_granted">Required permissions for app operation are not granted. Please enable them to continue.</string>
+    <string name="toast_permission_deny">Permission denied. Please enable it to continue.</string>
+
+    <string name="toast_device_connect_error">USB device unavailable. Please reconnect.</string>
+    <string name="toast_device_empty">No available devices!</string>
+    <string name="toast_device_serial_connect_error">USB serial port error. Please reinsert the device.</string>
+
+    <string name="text_confirm">Confirm</string>
+    <string name="text_ok">OK</string>
+    <string name="text_prompt">Prompt</string>
+    <string name="text_cancel">Cancel</string>
+    <string name="text_sys_prompt">System Prompt</string>
+    <string name="text_camera_check_failed">No camera detected. Please connect a camera to proceed with the field visit.</string>
+    <string name="text_prompt_stream_not_start">Note: Camera streaming is not enabled. Enable streaming to start the field visit.</string>
+
+    <string name="text_stream_prompt">Streaming Prompt</string>
+    <string name="text_stream_check_failed">Camera streaming is not enabled. Please enable streaming to continue.</string>
+<!--    <string name="text_stream_enable_delay">Enable Later</string>-->
+    <string name="text_stream_enable_delay">Later</string>
+<!--    <string name="text_stream_enable">Enable Streaming</string>-->
+    <string name="text_stream_enable">Enable</string>
+
+    <string name="text_predix_format_case">%1$s：%2$s</string>
+    <string name="text_predix_case_number">Case Number</string>
+    <string name="text_predix_case_address">Field Visit Address</string>
+
+    <string name="text_ask_end_case">Are you sure to end the field visit?</string>
+
+    <string name="text_no_case_select_first">No field visit available. Please select a case first.</string>
+    <string name="text_content_empty">No content</string>
+
+    <string name="text_video_setting">Video Settings</string>
+    <string name="text_pop_usb">Safely Eject USB</string>
+    <string name="text_prompt_case_select_first">No case selected. \nPlease choose a field visit case first.</string>
+<!--    <string name="text_select_case">Select Field Visit Case</string>-->
+    <string name="text_select_case">Select Case</string>
+
+    <string name="text_exit_app_ask">Are you sure you want to exit the app?</string>
+
+
+    <string name="text_video_resolution">Video resolution</string>
+    <string name="text_video_resolution_select">Please select resolution</string>
+    <string name="text_video_frame_rate">Video frame rate</string>
+    <string name="text_video_frame_rate_select">Please select frame rate</string>
+
+    <string name="text_video_streaming_settings">Streaming settings</string>
+    <string name="text_video_streaming_address">Streaming address</string>
+    <string name="text_video_streaming_address_edit">Please enter the streaming address</string>
+
+
+
+
+    <string name="text_lang_settings">Language settings</string>
+    <string name="text_lang_switch">Language Switching</string>
+    <string name="text_lang_select">Please select language</string>
+
+    <string name="text_english">English</string>
+    <string name="text_chinese">简体中文</string>
+
+
+
+    <string name="text_settings">Settings</string>
+
+    <string name="toast_stop_streaming_when_setting">Please stop streaming first</string>
+
+    <string name="title_case_select">Select field visit case</string>
+
+
+    <string name="text_finish_case">Finish</string>
+
+
+
+    <string name="text_message_face_ok">Face recognition successful</string>
+    <string name="text_message_face_fail">Face recognition failed</string>
+    <string name="text_message_behavior_abnormal">Abnormal behavior</string>
+    <string name="text_message_emotional">Emotional</string>
+    <string name="text_message_environment_old">Old environment</string>
+</resources>

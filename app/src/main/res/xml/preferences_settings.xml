@@ -5,12 +5,12 @@
     <!-- 视频 设置组 -->
     <PreferenceCategory
         android:key="category_video"
-        android:title="视频设置" >
+        android:title="@string/text_video_setting" >
 
         <ListPreference
             android:key="pref_resolution"
-            android:title="视频分辨率"
-            android:dialogTitle="请选择分辨率"
+            android:title="@string/text_video_resolution"
+            android:dialogTitle="@string/text_video_resolution_select"
             android:entries="@array/resolution_entries"
             android:entryValues="@array/resolution_values"
             android:defaultValue="1280x720"
@@ -18,8 +18,8 @@
 
         <ListPreference
             android:key="pref_fps"
-            android:title="视频帧率"
-            android:dialogTitle="请选择帧率"
+            android:title="@string/text_video_frame_rate"
+            android:dialogTitle="@string/text_video_frame_rate_select"
             android:entries="@array/fps_entries"
             android:entryValues="@array/fps_values"
             android:defaultValue="30"
@@ -30,14 +30,29 @@
     <!-- 推流 设置组 -->
     <PreferenceCategory
         android:key="category_stream"
-        android:title="推流设置" >
+        android:title="@string/text_video_streaming_settings" >
 
         <EditTextPreference
             android:key="endpoint"
-            android:title="推流地址"
-            android:dialogTitle="请输入推流地址"
+            android:title="@string/text_video_streaming_address"
+            android:dialogTitle="@string/text_video_streaming_address_edit"
             app:useSimpleSummaryProvider="true"
             android:defaultValue="" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_lang"
+        android:title="@string/text_lang_settings" >
+
+        <ListPreference
+            android:key="pref_lang"
+            android:title="@string/text_lang_switch"
+            android:dialogTitle="@string/text_lang_select"
+            android:entries="@array/lang_entries"
+            android:entryValues="@array/lang_values"
+            android:defaultValue="zh"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
