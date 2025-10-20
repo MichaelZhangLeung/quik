@@ -248,7 +248,8 @@ class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Call
         requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), 2)
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         if (TextUtils.isEmpty(sharedPreferences.getString("endpoint", null))){
-            sharedPreferences.edit().putString("endpoint", "rtmp://117.74.66.189:1935/live/stream5").apply()
+//            sharedPreferences.edit().putString("endpoint", "rtmp://117.74.66.189:1935/live/stream5").apply()
+            sharedPreferences.edit().putString("endpoint", "rtmp://122.115.57.199:1935/live/stream5").apply()
         }
         viewModel.command.observe(this) { cmd ->
             if(cmd == 1000){

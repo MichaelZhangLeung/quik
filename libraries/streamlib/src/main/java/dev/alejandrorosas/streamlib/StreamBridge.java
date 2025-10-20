@@ -92,6 +92,9 @@ public class StreamBridge {
             }
         }
         UsbSerialPort micPort = UsbDeviceManager.getInstance().getMicPort();
+        if (micPort == null){
+            return;
+        }
         workThreadExecutor.submit(() -> {
             SystemClock.sleep(2000);
             MyLog.e(TAG + "#handleEarPortData start ======>>>>>>");
@@ -100,7 +103,8 @@ public class StreamBridge {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             while (isStartRead) {
                 try {
-                    int size = micPort.read(readBuf, 50); //
+//                    int size = micPort.read(readBuf, 50); //
+                    int size = micPort.read(readBuf, 5); //
                     MyLog.e(TAG + "#handleEarPortData read size ======>>>>>>" + size + ", readBuf:" + Arrays.toString(readBuf));
                     if (size > 0) {
 
@@ -118,12 +122,12 @@ public class StreamBridge {
                             System.arraycopy(buf, offset, frame, 0, frameSize);
                             offset += frameSize;
 
-                            // 非阻塞入队：若满，丢最旧再尝试入队（保留最新）
-//                            boolean offered = micQueue.offerLast(frame);
-//                            if (!offered) {
-//                                micQueue.pollFirst();
-//                                micQueue.offerLast(frame);
-//                            }
+//                             非阻塞入队：若满，丢最旧再尝试入队（保留最新） todo 串口ai眼镜mod 本地录音测试需要注释入队代码
+                            boolean offered = micQueue.offerLast(frame);
+                            if (!offered) {
+                                micQueue.pollFirst();
+                                micQueue.offerLast(frame);
+                            }
                         }
                         // keep remainder
                         baos.reset();

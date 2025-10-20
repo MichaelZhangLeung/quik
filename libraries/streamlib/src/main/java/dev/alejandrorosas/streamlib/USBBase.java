@@ -8,6 +8,7 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.base.MyLog;
+import com.base.log.Dlog;
 import com.pedro.encoder.Frame;
 import com.pedro.encoder.audio.AudioEncoder;
 import com.pedro.encoder.audio.GetAacData;
@@ -219,6 +220,8 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
             MyLog.e(TAG + "#startPreview ===>>>");
             glInterface.setEncoderSize(width, height);
             glInterface.setRotation(0);
+//            glInterface.setIsPreviewHorizontalFlip(true);//todo 演示ai眼镜耳机接口，视频镜像设置（类似多处需要改写）
+//            glInterface.setIsStreamHorizontalFlip(true);
             glInterface.start();
             uvcCamera.setPreviewTexture(glInterface.getSurfaceTexture());
             uvcCamera.startPreview();
@@ -269,6 +272,7 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
      */
     public void startStream(UVCCamera uvcCamera, String url) {
         streaming = true;
+        Dlog.e("#startStream [streaming] streaming=true");
         if (!recording) {
             startEncoders(uvcCamera);
         } else {
@@ -293,6 +297,8 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
         glInterface.stop();
         glInterface.setEncoderSize(videoEncoder.getWidth(), videoEncoder.getHeight());
         glInterface.setRotation(0);
+//        glInterface.setIsPreviewHorizontalFlip(true);
+//        glInterface.setIsStreamHorizontalFlip(true);
         glInterface.start();
         uvcCamera.setPreviewTexture(glInterface.getSurfaceTexture());
         uvcCamera.startPreview();
@@ -342,6 +348,7 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
     public void stopStream(UVCCamera uvcCamera) {
         if (streaming) {
             streaming = false;
+            Dlog.e("#stopStream [streaming] streaming=false");
             stopStreamRtp();
         }
         if (!recording) {
@@ -585,6 +592,8 @@ public abstract class USBBase implements GetAacData, GetCameraData, GetVideoData
                 this.glInterface.init();
                 this.glInterface.setEncoderSize(videoEncoder.getWidth(), videoEncoder.getHeight());
                 this.glInterface.setRotation(0);
+//                glInterface.setIsPreviewHorizontalFlip(true);
+//                glInterface.setIsStreamHorizontalFlip(true);
                 this.glInterface.start();
                 if (isStreaming() || isRecording()) {
                     this.glInterface.addMediaCodecSurface(videoEncoder.getInputSurface());

@@ -7,9 +7,12 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.widget.Toast;
 
+import com.base.MyLog;
+
 
 public class UsbUtils {
 
+    private static final String TAG = "[UsbUtils]";
     private static Context sContext;
 
     public static String getDeviceName(UsbDevice device) {
@@ -30,13 +33,13 @@ public class UsbUtils {
 
     public static boolean isUsbMicrophone(UsbDevice device) {
         final int ifaceCount = device.getInterfaceCount();
-//        MyLog.e(TAG+"isUsbMicrophone ifaceCount:" + ifaceCount);
+        MyLog.e(TAG+"isUsbMicrophone ifaceCount:" + ifaceCount);
         for (int i = 0; i < ifaceCount; i++) {
             UsbInterface iface = device.getInterface(i);
 //            MyLog.e(TAG+"isUsbMicrophone iface:" + iface);
             int ifClass = iface.getInterfaceClass();
             int ifSubClass = iface.getInterfaceSubclass();
-//            MyLog.e(TAG+"isUsbMicrophone ifClass:" + ifClass + ", ifSubClass:" + ifSubClass);
+            MyLog.e(TAG+"isUsbMicrophone ifClass:" + ifClass + ", ifSubClass:" + ifSubClass);
             // CDC/CDC_DATA + bulk endpoints 发音频
             if (ifClass == UsbConstants.USB_CLASS_CDC_DATA || ifClass == UsbConstants.USB_CLASS_COMM) {
 //                MyLog.e(TAG+"isUsbMicrophone getEndpointCount:" + iface.getEndpointCount());
@@ -60,6 +63,19 @@ public class UsbUtils {
             // int vid = device.getVendorId();
             // int pid = device.getProductId();
             // if (vid == MY_AUDIO_VID && pid == MY_AUDIO_PID) return true;
+        }
+        return false;
+    }
+    public static boolean isEarphone(UsbDevice device) {
+        final int ifaceCount = device.getInterfaceCount();
+        for (int i = 0; i < ifaceCount; i++) {
+            UsbInterface iface = device.getInterface(i);
+            int ifClass = iface.getInterfaceClass();
+            int ifSubClass = iface.getInterfaceSubclass();
+            MyLog.e(TAG+"#isEarphone ifClass:" + ifClass + ", ifSubClass:" + ifSubClass);
+            if (ifClass == UsbConstants.USB_CLASS_AUDIO) {
+              return true;
+            }
         }
         return false;
     }

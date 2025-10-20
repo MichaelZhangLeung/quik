@@ -121,10 +121,11 @@ class StreamService : Service() {
         MyLog.e("$TAG#startStreamRtp endpoint:$endpoint, rtmpUSB.isStreaming:${rtmpUSB?.isStreaming}")
         if (rtmpUSB?.isStreaming == false) {
             this.endpoint = endpoint
-//            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 30, 4000 * 1024, 0, uvcCamera) && rtmpUSB!!.prepareAudio()) {
-            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 60, 1_000_000, 0, uvcCamera)
-//                && rtmpUSB!!.prepareAudioFromUSB(false, 16_000)) {
-                && rtmpUSB!!.prepareAudio()) {
+//            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 30, 4000 * 1024, 0, uvcCamera) && rtmpUSB!!.prepareAudio()) {//源码中推视频流的设置
+//            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 60, 1_000_000, 0, uvcCamera)//串口推视频流的设置
+            if (rtmpUSB!!.prepareVideo(cameraWidth, cameraHeight, 30, 1_000_000, 0, uvcCamera)//uvc camera 推视频流设置
+//                && rtmpUSB!!.prepareAudioFromUSB(false, 16_000)) {//串口推音频流的设置 todo 串口ai眼镜mod
+                && rtmpUSB!!.prepareAudio()) {//手机mic推音频流的设置
                 rtmpUSB!!.startStream(uvcCamera, endpoint)
                 return true
             }
@@ -187,11 +188,12 @@ class StreamService : Service() {
 
         override fun onConnectionFailedRtmp(reason: String) {
             showNotification("Stream connection failed")
-             MyLog.e("$TAG RTP service destroy")
+            MyLog.e("$TAG onConnectionFailedRtmp")
 
             coroutineScope.launch {
                 StreamEventBus.emitEvent(StreamEventBus.StreamEvent.StreamingResult(false, 0))
             }
+            stopStream()//推流失败时停止推流
             streamStatus = 0
         }
 
@@ -245,8 +247,8 @@ class StreamService : Service() {
         override fun onConnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?, createNew: Boolean) {
             MyLog.e("$TAG#onConnect endpoint:$endpoint")
 
-            if (UsbUtils.isUsbMicrophone(device)) {
-                MyLog.e("$TAG#mic device bye, only camera allow on here...")
+            if (UsbUtils.isUsbMicrophone(device) || UsbUtils.isEarphone(device)) {
+                MyLog.e("$TAG#usb mic device / earphone, bye, only camera allow on here...")
                 return
             }
 

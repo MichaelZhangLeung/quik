@@ -53,6 +53,7 @@ import com.pedro.rtplibrary.view.OpenGlView
 import com.rabtman.wsmanager.WsManager
 import com.rabtman.wsmanager.listener.WsStatusListener
 import dagger.hilt.android.AndroidEntryPoint
+import dev.alejandrorosas.apptemplate.Data
 import dev.alejandrorosas.apptemplate.IServiceControlInterface
 import dev.alejandrorosas.apptemplate.IStreamStateCallback
 import dev.alejandrorosas.apptemplate.MainViewModel
@@ -198,6 +199,7 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.fl_inject_device)?.setDebounceClickListener(2000L) {
                     viewModel.onSafeEjectButtonClick()
                     wsManager?.stopConnect()
+//                    StreamBridge.getInstance().stopWork()
                 }
             }
             false -> {
@@ -490,18 +492,22 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
             val intent = Intent(requireContext(), SettingsActivity::class.java)
             openSettingsForResult.launch(intent)
+
+//            var data = Data("VISIT_VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL", "VISIT_VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL")
+//            var notifyData = NotifyMessage("", "", true, data, 0L)
+//
+//            onPlayVoice(notifyData)
         }
 
+
 //        view.findViewById<FrameLayout>(R.id.fl_settings).setOnClickListener {
-////            if (StreamService.streamStatus == 1){
-////                Toast.makeText(requireContext(), "请停止推流后进行设置", Toast.LENGTH_SHORT).show()
-////                return@setOnClickListener
-////            }
-////
-////            val intent = Intent(requireContext(), SettingsActivity::class.java)
-////            openSettingsForResult.launch(intent)
 //
-//            StreamBridge.getInstance().startWork()
+//            var data = Data("VISIT_VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL", "VISIT_VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL")
+//            var notifyData = NotifyMessage("", "", true, data, 0L)
+//
+//            onPlayVoice(notifyData)
+//
+////            StreamBridge.getInstance().startWork()
 //
 ////            if (SerialEarPlayer.sSerialEarPlayer != null) {
 ////                Utils.toast("测试停止播放")
@@ -825,7 +831,7 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             wrapNotifyStatus("VIDEO_EMOTION_BEHAVIOR_ANALYSIS_ABNORMAL") -> R.raw.video_emotion_behavior_analysis_abnormal
             else                        -> 0
         }
-
+        MyLog.e("${TAG}#onPlayVoice-----$resId")
         if (resId > 0){
             voicePlayer?.play(resId)
         }

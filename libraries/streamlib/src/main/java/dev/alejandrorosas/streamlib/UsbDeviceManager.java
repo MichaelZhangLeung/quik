@@ -31,6 +31,7 @@ public class UsbDeviceManager {
     UsbStateCallBack usbStateCallBack;
 
     int baudrate = 921600; // Your desired baudrate
+    public static final boolean ENABLE_SERIAL_PORT_MIC = false;//todo 串口ai眼镜mod 串口设备方案开关
 //    int baudrate = 512000; // Your desired baudrate
 
 
@@ -49,12 +50,12 @@ public class UsbDeviceManager {
 //        SpUtils.setSharedStringData(Config.KEY_BOX_BATCH,boxBatch);
     }
 
-    public void clearDeviceInfo(){
-//        SpUtils.setSharedStringData(Config.KEY_BOX_IMEI,"");
-//        SpUtils.setSharedStringData(Config.KEY_BOX_BATCH,"");
-    }
-
     public void initDevice(Context context) {
+
+        if (!ENABLE_SERIAL_PORT_MIC){
+            return;
+        }
+
         mContext = context;
 
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
@@ -68,10 +69,13 @@ public class UsbDeviceManager {
     }
 
     public void setUsbStateCallBack(UsbStateCallBack callBack) {
+        if (!ENABLE_SERIAL_PORT_MIC){
+            return;
+        }
         usbStateCallBack = callBack;
     }
 
-    public void openConnect(boolean isNeedRequestPermission) {
+    private void openConnect(boolean isNeedRequestPermission) {
         try {
             if (availableDrivers == null || availableDrivers.isEmpty()) {
                 UsbUtils.toast(mContext.getString(R.string.toast_device_empty));
@@ -171,7 +175,6 @@ public class UsbDeviceManager {
         if (usbStateCallBack != null) {
             usbStateCallBack.setUsbState(false,false);
         }
-        clearDeviceInfo();
     }
 
     public interface UsbStateCallBack {
