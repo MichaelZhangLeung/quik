@@ -73,6 +73,11 @@ public class UsbUtils {
             int ifClass = iface.getInterfaceClass();
             int ifSubClass = iface.getInterfaceSubclass();
             MyLog.e(TAG+"#isEarphone ifClass:" + ifClass + ", ifSubClass:" + ifSubClass);
+
+            if (ifClass == UsbConstants.USB_CLASS_VIDEO) {
+              return false;
+            }
+
             if (ifClass == UsbConstants.USB_CLASS_AUDIO) {
               return true;
             }
