@@ -94,4 +94,7 @@
     <string name="text_message_behavior_abnormal">异常行为</string>
     <string name="text_message_emotional">情绪激动</string>
     <string name="text_message_environment_old">环境老旧</string>
+
+
+    <string name="text_start_api_failed">开始失败</string>
 </resources>

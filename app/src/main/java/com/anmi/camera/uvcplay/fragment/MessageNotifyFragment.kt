@@ -38,6 +38,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anmi.camera.uvcplay.CasesChooseActivity
 import com.anmi.camera.uvcplay.MainEntryViewModel
+import com.anmi.camera.uvcplay.bridge.DeviceInfoBridge
+import com.anmi.camera.uvcplay.data.StreamDemuxingRepository
 import com.anmi.camera.uvcplay.locale.LocaleHelper
 import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.tts.TtsStreamClient
@@ -66,6 +68,8 @@ import dev.alejandrorosas.streamlib.SerialEarPlayer
 import dev.alejandrorosas.streamlib.StreamBridge
 import dev.alejandrorosas.streamlib.StreamEventBus
 import dev.alejandrorosas.streamlib.StreamService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -78,6 +82,7 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnection, IServiceControlInterface {
@@ -85,6 +90,9 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     companion object {
         private const val TAG = "[MessageNotifyFragment]"
     }
+
+    @Inject
+    lateinit var streamDemuxingRepository: StreamDemuxingRepository
 
     private val viewModel: MainViewModel by activityViewModels()
     private val apiViewModel: MainEntryViewModel by activityViewModels()
@@ -117,6 +125,9 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     private var rttFuture: ScheduledFuture<*>? = null
 
     private var locale: String? = null
+
+    private val scopeJob = Job()
+    private val scope = CoroutineScope(Dispatchers.IO + scopeJob)
 
 
     @SuppressLint("NewApi")
@@ -698,6 +709,8 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
                             viewModel.setVisitId(null)
                             viewModel.setCaseModel(null)
+
+                            invokeStopApi(DeviceInfoBridge.readRtmpUrl())
                         } catch (e: Throwable) {
                             MyLog.e("$TAG endVisit confirm exception:$e", e)
                         }
@@ -982,5 +995,17 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
     fun Context.dpToPx(dp: Int): Int =
         (dp * resources.displayMetrics.density + 0.5f).toInt()
+
+    private fun invokeStopApi(streamId: String) {
+        MyLog.d(TAG + "invokeStopApi in")
+        scope.launch {
+            try {
+                val resultCode = streamDemuxingRepository.stop(streamId)
+                MyLog.d(TAG + "invokeStopApi resultCode:$resultCode")
+            } catch (t: Throwable) {
+                MyLog.e("${DeviceInfoBridge.TAG} invokeStopApi error: $t")
+            }
+        }
+    }
 }
 

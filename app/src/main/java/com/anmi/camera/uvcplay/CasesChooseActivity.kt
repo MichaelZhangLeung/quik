@@ -11,10 +11,11 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.anmi.camera.uvcplay.bridge.DeviceInfoBridge
+import com.anmi.camera.uvcplay.data.StreamDemuxingRepository
 import com.anmi.camera.uvcplay.model.CaseModel
 import com.anmi.camera.uvcplay.state.AddCaseState
 import com.anmi.camera.uvcplay.ui.BaseActivity
@@ -22,9 +23,15 @@ import com.anmi.camera.uvcplay.ui.CaseAdapter
 import com.anmi.camera.uvcplay.utils.Utils
 import com.anmi.camera.uvcplay.utils.Utils.setDebounceClickListener
 import com.base.MyLog
-import com.pedro.encoder.Frame
 import dagger.hilt.android.AndroidEntryPoint
 import dev.alejandrorosas.apptemplate.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -37,6 +44,12 @@ class CasesChooseActivity : BaseActivity(R.layout.activity_cases_choose){
     private var wsUrl: String? = null
     private var visitId: String? = null
     private var streamSuccess: Boolean? = false
+
+    @Inject
+    lateinit var streamDemuxingRepository: StreamDemuxingRepository
+
+    private val scopeJob = Job()
+    private val scope = CoroutineScope(Dispatchers.IO + scopeJob)
 
     companion object {
         private const val TAG = "[CasesChooseActivity]"
@@ -68,9 +81,20 @@ class CasesChooseActivity : BaseActivity(R.layout.activity_cases_choose){
                 Toast.makeText(this,
                     R.string.toast_select_case_first, Toast.LENGTH_SHORT).show()
             } else {
-                visitId = getVisitId()
-                MyLog.d(TAG + "开始外访, visitId:$visitId")
-                visitId?.let { it1 -> viewModel.addCase(selectedItem!!, it1) }
+               invokeStartApi(
+                   DeviceInfoBridge.readRtmpUrl(),
+                   onSuccess = {
+                       MyLog.d("start ok -> do business")
+                       visitId = getVisitId()
+                       MyLog.d(TAG + "开始外访, visitId:$visitId")
+                       visitId?.let { it1 -> viewModel.addCase(selectedItem!!, it1) }
+                   },
+                   onError = { err ->
+                       MyLog.e("start failed: $err")
+                       Toast.makeText(this,
+                           R.string.text_start_api_failed, Toast.LENGTH_SHORT).show()
+                   }
+               )
             }
         }
         loadingFl  = findViewById(R.id.loading_overlay)
@@ -134,6 +158,7 @@ class CasesChooseActivity : BaseActivity(R.layout.activity_cases_choose){
     override fun onDestroy() {
         super.onDestroy()
         MyLog.d(TAG + "onDestroy")
+        scope.cancel()
     }
 
     @SuppressLint("MissingSuperCall")
@@ -152,5 +177,31 @@ class CasesChooseActivity : BaseActivity(R.layout.activity_cases_choose){
 
         //推流未开始时，开始外访生成新visitId
         return Utils.generateVisitId()
+    }
+
+    private fun invokeStartApi(
+        streamId: String,
+        onSuccess: () -> Unit = {},
+        onError: (Throwable) -> Unit = {}) {
+
+        MyLog.d(TAG  + "invokeStartApi in")
+        scope.launch {
+            try {
+                val resultCode = streamDemuxingRepository.start(streamId)
+                MyLog.d(TAG  + "invokeStartApi resultCode:$resultCode")
+                if (resultCode == 200){
+                    withContext(Dispatchers.Main) {
+                        onSuccess()
+                    }
+                    return@launch
+                }
+                throw RuntimeException("start api failed:$resultCode")
+            } catch (t: Throwable) {
+                MyLog.e("${DeviceInfoBridge.TAG} invokeStartApi error: $t")
+                withContext(Dispatchers.Main) {
+                    onError(t)
+                }
+            }
+        }
     }
 }

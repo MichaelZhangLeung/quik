@@ -27,6 +27,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.preference.PreferenceManager
 import com.anmi.camera.uvcplay.MainEntryViewModel
+import com.anmi.camera.uvcplay.bridge.DeviceInfoBridge
+import com.anmi.camera.uvcplay.data.StreamDemuxingRepository
 import dev.alejandrorosas.streamlib.StreamBridge
 import com.anmi.camera.uvcplay.fragment.AnalyzeFragment
 import com.anmi.camera.uvcplay.fragment.MessageNotifyFragment
@@ -42,6 +44,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.alejandrorosas.apptemplate.MainViewModel.ViewState
 import dev.alejandrorosas.streamlib.UsbDeviceManager
 import com.duyansoft.usbhelperlib.UsbHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Callback, ServiceConnection, IServiceControlInterface {
@@ -52,6 +60,13 @@ class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Call
     private val analyzeFragment by lazy { AnalyzeFragment() }
     private val historyFragment by lazy { HistoryFragment() }
 
+
+
+    @Inject
+    lateinit var streamDemuxingRepository: StreamDemuxingRepository
+
+    private val scopeJob = Job()
+    private val scope = CoroutineScope(Dispatchers.IO + scopeJob)
 
 
     private var mHandler: Handler = object : Handler(Looper.getMainLooper()) {
@@ -77,6 +92,8 @@ class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Call
                 getString(R.string.text_cancel),
                 getString(R.string.text_ok),
                 onConfirm = {
+                    invokeStopApi(DeviceInfoBridge.readRtmpUrl())
+
                     clearAllFragments()
                     // 关闭当前 Activity 以及所有父 Activity
                     finishAffinity()
@@ -260,6 +277,8 @@ class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Call
                     getString(R.string.text_cancel),
                     getString(R.string.text_ok),
                     onConfirm = {
+                        invokeStopApi(DeviceInfoBridge.readRtmpUrl())
+
                         clearAllFragments()
                         // 关闭当前 Activity 以及所有父 Activity
                         finishAffinity()
@@ -381,7 +400,8 @@ class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Call
 //        } catch (e: Exception) {
 //            Log.e(TAG, "onDestroy exception:$e", e)
 //        }
-        super.onDestroy();
+        super.onDestroy()
+        scope.cancel()
     }
 
     override fun stop(context: Context?) {
@@ -420,5 +440,16 @@ class UvcMainActivity : BaseActivity(R.layout.activity_main), SurfaceHolder.Call
         }
     }
 
+    private fun invokeStopApi(streamId: String) {
+        MyLog.d(TAG + "invokeStopApi in")
+        scope.launch {
+            try {
+                val resultCode = streamDemuxingRepository.stop(streamId)
+                MyLog.d(TAG + "invokeStopApi resultCode:$resultCode")
+            } catch (t: Throwable) {
+                MyLog.e("${DeviceInfoBridge.TAG} invokeStopApi error: $t")
+            }
+        }
+    }
 
 }

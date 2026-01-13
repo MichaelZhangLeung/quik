@@ -42,6 +42,7 @@ class HistoryFragment : Fragment() {
 
 //    private val mUrl:String = "https://172.21.66.2:15658/algorithm/ai-envoy-h5/#/history"
     private val mUrl:String = "https://myvap.duyansoft.com/algorithm/ai-envoy-h5/#/history"
+//    private val mUrl:String = "https://test-ai.duyansoft.com/algorithm/ai-envoy-h5/#/history"
 
     // 记录上次 reload 的系统时间（毫秒）
     private var lastReloadTime: Long = 0L

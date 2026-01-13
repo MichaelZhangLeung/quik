@@ -22,4 +22,8 @@ class BaseBean<T> : Serializable {
             throw HttpThrowable(code!!, msg)
         }
     }
+
+    fun toCode(): Int? {
+        return code
+    }
 }

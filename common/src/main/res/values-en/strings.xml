@@ -107,4 +107,6 @@
     <string name="text_message_behavior_abnormal">Abnormal behavior</string>
     <string name="text_message_emotional">Emotional</string>
     <string name="text_message_environment_old">Old environment</string>
+
+    <string name="text_start_api_failed">launch failed</string>
 </resources>
