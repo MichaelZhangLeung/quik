@@ -1,0 +1,16 @@
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:ignore="MissingDefaultResource">
+    <item
+        android:id="@+id/nav_message"
+        android:icon="@drawable/selector_nav_bottom_msg"
+        android:title="@string/nav_title_message_notify" />
+    <item
+        android:id="@+id/nav_case"
+        android:icon="@drawable/selector_nav_bottom_visit"
+        android:title="@string/nav_title_case_analyze" />
+    <item
+        android:id="@+id/nav_history"
+        android:icon="@drawable/selector_nav_bottom_history"
+        android:title="@string/nav_title_case_history" />
+</menu>

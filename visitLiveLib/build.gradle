@@ -1,0 +1,300 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-parcelize'
+apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'com.kezong.fat-aar'
+
+
+//fataar {
+//    transitive = true // 是否自动包含传递性依赖
+//}
+
+def manualJniDir = "${buildDir}/generated/manual_jni"
+
+
+task copySubModuleSo(type: Copy) {
+    // 确保子模块先完成编译
+    dependsOn ":libraries:libuvccamera:assembleRelease"
+
+    // 源路径：你发现 so 的位置
+    def sourcePath = "${project(':libraries:libuvccamera').buildDir}/intermediates/library_and_local_jars_jni/release/jni"
+
+    from sourcePath
+    into manualJniDir
+
+    // 只拷贝你需要的架构，从源头过滤掉 x86 等
+    include 'arm64-v8a/*.so'
+    include 'armeabi-v7a/*.so'
+
+    // 如果只需要特定的 4 个 so，也可以精确指定名（可选）
+    // include '**/libA.so', '**/libB.so'
+}
+
+afterEvaluate {
+    // 兼容 Release 编译
+    if (tasks.findByName('mergeReleaseJniLibFolders')) {
+        tasks.named('mergeReleaseJniLibFolders').configure {
+            dependsOn copySubModuleSo
+        }
+    }
+    // 兼容 Debug 编译
+    if (tasks.findByName('mergeDebugJniLibFolders')) {
+        tasks.named('mergeDebugJniLibFolders').configure {
+            dependsOn copySubModuleSo
+        }
+    }
+
+    // 优先尝试 bundleReleaseAar，它是 Library 产出 AAR 的核心任务
+    def archiveTask = tasks.findByName('bundleReleaseAar') ?: tasks.findByName('assembleRelease')
+
+    if (archiveTask != null) {
+        archiveTask.finalizedBy fixDuplicateModuleInfo
+        println "Successfully attached fixDuplicateModuleInfo to ${archiveTask.name}"
+    }
+}
+
+task fixDuplicateModuleInfo {
+    doLast {
+        def aarFiles = fileTree("${buildDir}/outputs/aar/").include("*release.aar")
+
+        aarFiles.each { aarFile ->
+            println ">>> Processing AAR: ${aarFile.name}"
+
+            // 1. 创建临时目录解压 AAR
+            def tempDir = file("${buildDir}/tmp/unpack_aar")
+            if(tempDir.exists()) tempDir.deleteDir()
+            tempDir.mkdirs()
+
+            copy {
+                from zipTree(aarFile)
+                into tempDir
+            }
+
+            // 2. 找到解压后所有的 JAR 文件 (包括 classes.jar 和 libs/*.jar)
+            def jarFiles = fileTree(tempDir).include("**/*.jar")
+
+            jarFiles.each { jarFile ->
+                println "    Stripping JAR: ${jarFile.name}"
+                exec {
+                    // 彻底删除 JAR 内部的多版本信息和模块信息
+                    commandLine 'zip', '-d', jarFile.absolutePath,
+                            "**/module-info.class",
+                            "META-INF/versions/*",
+                            "META-INF/*.kotlin_module"
+                    ignoreExitValue true
+                }
+            }
+
+            // 3. 将修改后的内容重新打包回原 AAR 路径
+            // 注意：为了简单起见，这里我们直接覆盖原 AAR
+            ant.zip(destfile: aarFile.absolutePath, basedir: tempDir)
+
+            println ">>> Successfully fixed: ${aarFile.name}"
+        }
+    }
+}
+
+
+//task fixDuplicateModuleInfo {
+//    doLast {
+//        // 定位生成的 AAR 文件
+//        def aarFile = file("${buildDir}/outputs/aar/visitLiveLib_v1.1.5_20260116_release.aar")
+//        if (!aarFile.exists()) return
+//
+//        println "Fixing duplicate entries in: ${aarFile.name}"
+//
+//        // 这里通过 shell 命令使用 zip 压缩工具直接删除 AAR 及其内部可能存在的 JAR 的冲突项
+//        // 如果是 Mac/Linux 环境：
+//        exec {
+//            // 删除 AAR 根目录下的冲突项
+//            commandLine 'zip', '-d', aarFile.absolutePath, "**/module-info.class", "META-INF/versions/*"
+//            ignoreExitValue true // 防止因为找不到文件而报错
+//        }
+//    }
+//}
+//
+//// 确保在生成 AAR 后立即执行修复
+//tasks.named('assembleRelease').configure {
+//    finalizedBy fixDuplicateModuleInfo
+//}
+
+android {
+    namespace "dev.alejandrorosas.apptemplate"
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    defaultConfig {
+
+//
+        buildConfigField "String", "SDK_VERSION_NAME", "\"${rootProject.versionName}\""
+        buildConfigField "String", "SDK_VERSION_CODE", "\"${rootProject.versionCode}\""
+
+        ndk {
+//            abiFilters 'arm64-v8a', 'armeabi', 'armeabi-v7a', 'x86', 'x86_64'
+            //noinspection ChromeOsAbiSupport
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    android.libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (outputFile != null && outputFile.name.endsWith('.aar')) {
+                // 自定义名称：visitLiveLib_v1.0.0_20260115.aar
+                def projectName = "visitLiveLib"
+                def version = "${rootProject.versionName}" // 也可以引用外部定义的 version
+                def date = new Date().format("yyyyMMdd")
+
+                // 设置新的文件名
+//                outputFileName = "${projectName}_v${version}_${date}_${variant.name}.aar"
+                outputFileName = "${projectName}_v${version}_${variant.name}.aar"
+            }
+        }
+    }
+//    signingConfigs {//签名配置
+//        release {//发布版签名配置
+//            storeFile file("$projectDir/keystore/anmilite.keystore")//密钥文件路径
+//            storePassword "dy365dy"//密钥文件密码
+//            keyAlias "aa"//key别名
+//            keyPassword "dy365dy"//key密码
+//
+//            v1SigningEnabled true
+//            v2SigningEnabled true
+//        }
+//        debug {//debug版签名配置
+//            storeFile file("$projectDir/keystore/anmilite.keystore")
+//            storePassword "dy365dy"//密钥文件密码
+//            keyAlias "aa"//key别名
+//            keyPassword "dy365dy"//key密码
+//
+//            v1SigningEnabled true
+//            v2SigningEnabled true
+//        }
+//    }
+
+
+
+//    applicationVariants.all{variant->
+//        variant.outputs.all{
+//            outputFileName = "anmi-poc-demo-"+rootProject.ext.versionCode +".apk"
+//        }
+//
+//    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//            signingConfig signingConfigs.debug//设置签名信息
+//            buildConfigField 'String' , 'apkTime',  "\"${releaseTime()}\""
+
+        }
+        release {
+            minifyEnabled false
+            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//            signingConfig signingConfigs.release//设置签名信息
+//            buildConfigField 'String' , 'apkTime',  "\"${releaseTime()}\""
+        }
+    }
+
+    packagingOptions {
+        // 显式排除不需要的架构文件夹
+        exclude 'lib/x86/**'
+        exclude 'lib/x86_64/**'
+        exclude 'lib/mips/**'
+        exclude 'lib/mips64/**'
+
+        // 1. 专门针对 module-info.class 进行全局排除
+        exclude '**/module-info.class'
+
+        // 2. 排除所有多版本 JAR 的元数据目录
+        exclude 'META-INF/versions/**'
+
+        // 3. 常见的重复资源排除，防止引起 Resource Merge 冲突
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/*.kotlin_module'
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs += manualJniDir
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude: [])
+    embed project(':core')
+    embed project(':libraries:streamlib')
+    embed project(':libraries:libuvccamera')
+
+    embed project(':usbHelperLib')
+    embed project(':common')
+
+    embed "com.github.mik3y:usb-serial-for-android:3.8.0"
+    embed ("com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.4")
+    embed "com.github.pedroSG94.rtmp-rtsp-stream-client-java:encoder:2.2.4"
+
+    embed 'com.tencent.tbs:tbssdk:44286'
+
+    implementation rootProject.ext.kotlin
+    implementation rootProject.ext.appcompat
+    implementation "androidx.preference:preference-ktx:1.2.1"
+    implementation "com.google.android.material:material:1.9.0"
+    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation rootProject.ext.core
+    implementation rootProject.ext.constraintLayout
+    implementation rootProject.ext.dagger
+    implementation rootProject.ext.hilt
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+
+    kapt rootProject.ext.daggerCompiler
+    kapt rootProject.ext.hiltCompiler
+    kapt rootProject.ext.androidXHiltCompiler
+
+    testImplementation rootProject.ext.junit
+
+    androidTestImplementation rootProject.ext.androidTestJunit
+    androidTestImplementation rootProject.ext.androidTestEspresso
+
+    implementation("com.google.code.gson:gson:2.11.0")
+
+    // Hilt
+//    implementation "com.google.dagger:hilt-android:2.48"
+//    kapt "com.google.dagger:hilt-compiler:2.48"
+
+    // Retrofit
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+
+    // ViewModel + LiveData
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    implementation "androidx.activity:activity-ktx:1.8.0"
+
+    // RecyclerView
+//    implementation "androidx.recyclerview:recyclerview:1.3.2"
+
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("com.github.bumptech.glide:glide:4.11.0")
+
+    implementation 'com.tencent.tbs:tbssdk:44286'  // 版本号可能需更新
+    implementation "com.github.mik3y:usb-serial-for-android:3.8.0"
+
+    implementation "jakarta.inject:jakarta.inject-api:2.0.1"
+}
+
+kapt {
+    correctErrorTypes true
+}

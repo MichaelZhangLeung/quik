@@ -32,10 +32,13 @@
     <string name="toast_device_serial_connect_error">usb串口异常，请重新插入</string>
 
     <string name="text_confirm">确认</string>
+    <string name="visit_text_known">我知道了</string>
     <string name="text_ok">确定</string>
     <string name="text_prompt">提示</string>
     <string name="text_cancel">取消</string>
     <string name="text_sys_prompt">系统提示</string>
+    <string name="visit_text_device_connect_title">设备连接提示</string>
+    <string name="visit_text_device_connect_failed_content">检测到AI眼镜未连接，请连接后再进行外访作业。</string>
     <string name="text_camera_check_failed">未检测到摄像头，请连接摄像头后进行外访作业。</string>
     <string name="text_prompt_stream_not_start">提示：摄像头未开启推流，开启推流后可进行外访作业。</string>
 
