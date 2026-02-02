@@ -1,0 +1,13 @@
+# ninja log v5
+18	1171	1768875197617065636	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	b70ddb90be6b1384
+0	41	1768289902483419866	build.ninja	9ff3c06e931cf921
+1172	1372	1768875197822925471	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/arm64-v8a/libusbhelperlib.so	35dc832a91def546
+0	10	0	clean	d80d644ad55c25c8
+1	1068	1768875497574695023	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	b70ddb90be6b1384
+1068	1261	1768875497771389884	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/arm64-v8a/libusbhelperlib.so	35dc832a91def546
+0	13	0	clean	d80d644ad55c25c8
+14	1538	1769147633389474761	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	b70ddb90be6b1384
+1538	1735	1769147633592662526	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/arm64-v8a/libusbhelperlib.so	35dc832a91def546
+0	7	0	clean	d80d644ad55c25c8
+23	6166	1769504502923439661	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	b70ddb90be6b1384
+6166	6411	1769504503170501293	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/arm64-v8a/libusbhelperlib.so	35dc832a91def546

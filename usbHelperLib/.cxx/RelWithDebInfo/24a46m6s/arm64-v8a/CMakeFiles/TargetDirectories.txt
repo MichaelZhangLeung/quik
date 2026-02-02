@@ -1,0 +1,3 @@
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/24a46m6s/arm64-v8a/CMakeFiles/usbhelperlib.dir
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/24a46m6s/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/24a46m6s/arm64-v8a/CMakeFiles/rebuild_cache.dir

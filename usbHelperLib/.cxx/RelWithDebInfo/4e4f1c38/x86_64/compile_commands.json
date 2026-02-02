@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/4e4f1c38/x86_64",
+  "command": "/Users/ldd/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++ --target=x86_64-none-linux-android23 --gcc-toolchain=/Users/ldd/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/ldd/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Dusbhelperlib_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O2 -g -DNDEBUG -fPIC -o CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o -c /Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/src/main/cpp/usbhelperlib.cpp",
+  "file": "/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/src/main/cpp/usbhelperlib.cpp"
+}
+]

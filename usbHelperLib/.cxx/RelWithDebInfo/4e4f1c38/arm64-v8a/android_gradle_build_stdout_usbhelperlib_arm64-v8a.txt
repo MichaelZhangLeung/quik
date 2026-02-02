@@ -1,0 +1,2 @@
+ninja: Entering directory `/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/4e4f1c38/arm64-v8a'
+ninja: no work to do.

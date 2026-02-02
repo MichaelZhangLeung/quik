@@ -1,0 +1,7 @@
+Executable : /Users/ldd/Library/Android/sdk/cmake/3.22.1/bin/ninja
+arguments : 
+-C
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/Debug/03l45v4f/armeabi-v7a
+usbhelperlib
+jvmArgs : 
+

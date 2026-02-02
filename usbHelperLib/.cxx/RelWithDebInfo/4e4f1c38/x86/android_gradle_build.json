@@ -1,0 +1,38 @@
+{
+  "buildFiles": [
+    "/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/ldd/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/4e4f1c38/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/ldd/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/RelWithDebInfo/4e4f1c38/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "usbhelperlib::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "usbhelperlib",
+      "output": "/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/RelWithDebInfo/4e4f1c38/obj/x86/libusbhelperlib.so",
+      "runtimeFiles": []
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/ldd/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/ldd/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

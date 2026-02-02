@@ -1,0 +1,3 @@
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/Debug/03l45v4f/armeabi-v7a/CMakeFiles/usbhelperlib.dir
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/Debug/03l45v4f/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/.cxx/Debug/03l45v4f/armeabi-v7a/CMakeFiles/rebuild_cache.dir

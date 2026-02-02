@@ -1,5 +1,1 @@
-rootProject.name='UVC Rtmp Stream'
-include ':app'
-include ':core'
-include ':libraries:streamlib'
-include ':libraries:libuvccamera'
+include ':presentation', ':android-smsmms', ':domain', ':data', ':common'

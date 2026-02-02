@@ -1,0 +1,13 @@
+# ninja log v5
+1	560	1768875198396802902	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	300cdb5e7a8dcf7a
+560	924	1768875198752749155	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/armeabi-v7a/libusbhelperlib.so	eb132bf38252ac6
+9	314	1768289902419101736	build.ninja	2e861e4c17f0826e
+0	11	0	clean	d80d644ad55c25c8
+0	543	1768875498325832342	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	300cdb5e7a8dcf7a
+543	906	1768875498678833141	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/armeabi-v7a/libusbhelperlib.so	eb132bf38252ac6
+0	23	0	clean	d80d644ad55c25c8
+1	636	1769147634242315798	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	300cdb5e7a8dcf7a
+636	1010	1769147634615180004	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/armeabi-v7a/libusbhelperlib.so	eb132bf38252ac6
+0	16	0	clean	d80d644ad55c25c8
+1	550	1769504503749262866	CMakeFiles/usbhelperlib.dir/usbhelperlib.cpp.o	300cdb5e7a8dcf7a
+550	977	1769504504170460024	/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/03l45v4f/obj/armeabi-v7a/libusbhelperlib.so	eb132bf38252ac6

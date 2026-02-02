@@ -1,0 +1,1 @@
+/Users/ldd/zl/repos_local/android-uvc-rtmp-stream/usbHelperLib/build/intermediates/cxx/Debug/65ph1bc4/obj/arm64-v8a
