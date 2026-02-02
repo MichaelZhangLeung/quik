@@ -8,7 +8,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.os.Message
 import android.os.SystemClock
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -106,6 +109,10 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
     private var messageFl: FrameLayout? = null
     private var messageEmptyRl: RelativeLayout? = null
     private var caseRunningLayout: LinearLayout? = null
+    private var backBtn: View? = null
+
+
+
     private var adapter :NotifyMessageAdapter? = null
 //    private var wsUrl: String  = "wss://172.21.66.2:15658/v1/visit/ws/%s"
     private var wsUrl: String  = "wss://myvap.duyansoft.com/algorithm/visit-api/v1/visit/ws/%s"
@@ -128,6 +135,44 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
     private val scopeJob = Job()
     private val scope = CoroutineScope(Dispatchers.IO + scopeJob)
+
+    private var mHandler: Handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            if (msg.what == 0){
+                if (msg.obj == 1){
+                    showSystemAlert(
+                        getString(R.string.visit_text_stream_title),
+                        getString(R.string.visit_text_stream_content),
+                        true,
+                        getString(R.string.text_cancel),
+                        getString(R.string.visit_text_confirm_start),
+                        onConfirm = {
+                        },
+                        onCancel = {
+                        },
+                        tag = "visit_stream_alert"
+                    )
+                } else if (msg.obj == 2){
+                    showSystemAlert(
+                        getString(R.string.visit_text_device_connect_title),
+                        getString(R.string.visit_text_device_connect_failed_content),
+                        false,
+                        "",
+                        getString(R.string.visit_text_known),
+                        onConfirm = {
+                        },
+                        onCancel = {
+                        },
+                        tag = "visit_usb_disconnect_alert"
+                    )
+                }
+            } else if (msg.what == 1){
+                onStatusBarChange()
+            }
+
+        }
+    }
 
 
     @SuppressLint("NewApi")
@@ -178,8 +223,10 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
 
     @SuppressLint("SetTextI18n")
     private fun onStatusBarChange() {
+        MyLog.e("#onStatusBarChange in, deviceConnected:$deviceConnected", Throwable())
         when (deviceConnected) {
             true -> {
+                mLayoutInflaterView?.findViewById<LinearLayout>(R.id.ll_stream_info)?.visibility = VISIBLE
                 mLayoutInflaterView?.findViewById<TextView>(R.id.tv_resolution)?.text = viewModel.getResolution()
                 mLayoutInflaterView?.findViewById<TextView>(R.id.tv_fps)?.text = "${viewModel.getFps()}fps"
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.tv_stream_info)?.visibility = VISIBLE
@@ -212,24 +259,19 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
                     wsManager?.stopConnect()
 //                    StreamBridge.getInstance().stopWork()
                 }
+
+
+                mHandler.removeMessages(0)
+                mHandler.sendMessageDelayed(Message.obtain(mHandler, 0, 1), 1000)
             }
             false -> {
+                mLayoutInflaterView?.findViewById<LinearLayout>(R.id.ll_stream_info)?.visibility = GONE
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.tv_stream_info)?.visibility = GONE
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.fl_stream)?.visibility  = GONE
                 mLayoutInflaterView?.findViewById<FrameLayout>(R.id.fl_inject_device)?.visibility  = GONE
 
-                showSystemAlert(
-                    getString(R.string.visit_text_device_connect_title),
-                    getString(R.string.visit_text_device_connect_failed_content),
-                    false,
-                    "",
-                    getString(R.string.visit_text_known),
-                    onConfirm = {
-                    },
-                    onCancel = {
-                    },
-                    tag = "visit_usb_disconnect_alert"
-                )
+                mHandler.removeMessages(0)
+                mHandler.sendMessageDelayed(Message.obtain(mHandler, 0, 2), 1000)
             }
         }
     }
@@ -302,7 +344,8 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             },
         )
         collectStreamEvents()
-        onStatusBarChange()
+        mHandler.removeMessages(1)
+        mHandler.sendEmptyMessageDelayed(1, 3000L)
     }
 
 
@@ -485,12 +528,29 @@ class MessageNotifyFragment : Fragment(), SurfaceHolder.Callback, ServiceConnect
             }
         }
 
-        onStatusBarChange()
+        mHandler.removeMessages(1)
+        mHandler.sendEmptyMessageDelayed(1, 3000L)
     }
 
     var ttsStreamClient:TtsStreamClient? = null
 
     private fun initPreview(view: View){
+
+        backBtn = view.findViewById(R.id.fl_back_arrow)
+
+        backBtn?.setOnClickListener {
+
+            val packageName = requireContext().packageName
+            val launchIntent = requireContext().packageManager.getLaunchIntentForPackage(packageName)
+
+            if (launchIntent != null) {
+                // 2. 设置 Flag，确保是回到原有栈，而不是新开页面
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                startActivity(launchIntent)
+            }
+
+        }
+
         openGlView = view.findViewById(R.id.openglview)
         rlUsbDisConnectWarning = view.findViewById(R.id.rl_usb_disconnect)
         StreamService.openGlView = openGlView

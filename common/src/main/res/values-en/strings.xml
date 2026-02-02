@@ -38,6 +38,7 @@
     <string name="toast_device_serial_connect_error">USB serial port error. Please reinsert the device.</string>
 
     <string name="text_confirm">Confirm</string>
+    <string name="visit_text_confirm_start">Confirm Start</string>
     <string name="text_ok">OK</string>
     <string name="text_prompt">Prompt</string>
     <string name="text_cancel">Cancel</string>
@@ -112,4 +113,6 @@
     <string name="text_start_api_failed">launch failed</string>
     <string name="visit_text_device_connect_failed_content">AI glasses not connected. Please connect before visiting work.</string>
     <string name="visit_text_known">I see</string>
+    <string name="visit_text_stream_title">AI Visit Prompt</string>
+    <string name="visit_text_stream_content">Do you want to start the AI ​​field visit? Once started, please ensure a stable connection between your glasses and phone to guarantee real-time video acquisition for AI analysis.</string>
 </resources>
